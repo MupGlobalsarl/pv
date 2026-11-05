@@ -11,12 +11,14 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MUPGLOBAL PV">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 :root{--brand:#0B5A2E;--brand-2:#14783f;--gold:#F5B301;--ink:#14231a;--muted:#5b6b60;--line:#dfe6e1;--surface:#fff;--bg:#f3f6f4}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e9f1ec;--muted:#a9b9ae;--line:#2a3a30;--surface:#16211b;--bg:#0e1712}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{background:linear-gradient(160deg,#0B5A2E,#06351b);color:#fff;padding:28px 16px 34px;text-align:center}
+header{background:linear-gradient(160deg,#0B5A2E,#06351b);color:#fff;padding:calc(28px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-left,0px)) 34px;text-align:center}
+html{-webkit-text-size-adjust:100%}
 header img{width:96px;height:96px;border-radius:24px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 header h1{margin:14px 0 4px;font-size:26px;line-height:1.2}
 header p{margin:0;color:#cfe8d8}
@@ -49,6 +51,7 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:20px 16px 40p
   <div class="cta">
     <button class="btn main" id="inst" hidden>⬇ Installer l'application</button>
     <a class="btn main" id="open" href="./index.html">Ouvrir l'application</a>
+    <a class="btn sec" href="#video">🎬 Voir la vidéo d'installation</a>
     <a class="btn sec" href="https://wa.me/243995679353?text=Bonjour%20MUPGLOBAL%20SARL%2C%20je%20souhaite%20une%20licence%20de%20l%27application%20MUPGLOBAL%20PV." target="_blank" rel="noopener">Demander une licence par WhatsApp</a>
   </div>
 
@@ -77,6 +80,14 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:20px 16px 40p
       <li><b>Ouvrez l'application depuis l'icône MUPGLOBAL PV</b> et demandez votre clé <b>depuis l'icône</b> : sur iPhone, l'icône a son propre code d'appareil.</li>
     </ol>
     <p class="note">iOS 16.4 ou plus récent : possible aussi depuis Chrome (bouton Partager <span class="ic">⇧</span> dans la barre d'adresse).</p>
+  </section>
+
+  <section class="card" id="video">
+    <h2>🎬 Vidéo : installer et activer (Android et iPhone)</h2>
+    <video controls playsinline preload="none" poster="icon-512.png" style="width:100%;max-width:360px;display:block;margin:0 auto;border-radius:14px;background:#000;aspect-ratio:9/16">
+      <source src="video-installation.mp4" type="video/mp4">
+    </video>
+    <p style="text-align:center;margin:10px 0 0"><a href="video-installation.mp4" download style="color:var(--brand-2);font-weight:700">⬇ Télécharger la vidéo (1,4 Mo)</a></p>
   </section>
 
   <section class="card" id="pc">
