@@ -6,7 +6,8 @@ Android 🤖 et iPhone 📱 · fonctionne sans Internet · mises à jour automat
 
 <p align="center">
 <a href="https://mupglobalsarl.github.io/pv/installer.html"><b>📲 Page d'installation (Android et iPhone)</b></a> ·
-<a href="https://mupglobalsarl.github.io/pv/"><b>▶ Ouvrir l'application</b></a>
+<a href="https://mupglobalsarl.github.io/pv/"><b>▶ Ouvrir l'application</b></a> ·
+<a href="https://mupglobalsarl.github.io/pv/video-installation.mp4"><b>🎬 Vidéo d'installation</b></a>
 </p>
 
 <p align="center"><img src="qr-installer.png" width="200" alt="QR code – installer MUPGLOBAL PV"><br>Scannez avec le téléphone</p>
