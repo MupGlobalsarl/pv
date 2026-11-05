@@ -1,0 +1,38 @@
+{
+ "name": "MUPGLOBAL PV – Dimensionnement solaire",
+ "short_name": "MUPGLOBAL PV",
+ "description": "Programme de dimensionnement photovoltaïque – MUPGLOBAL SARL, Lubumbashi",
+ "lang": "fr",
+ "start_url": "./index.html",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#0B5A2E",
+ "theme_color": "#0B5A2E",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-maskable-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "maskable"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
