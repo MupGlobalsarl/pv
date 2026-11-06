@@ -25,8 +25,9 @@ Android 🤖 et iPhone 📱 · fonctionne sans Internet · mises à jour automat
 
 ## 📱 iPhone / iPad (Safari)
 
-1. Ouvrez **https://mupglobalsarl.github.io/pv/installer.html** dans **Safari**.
-2. Touchez **Partager ⇧** puis **« Sur l'écran d'accueil »** → **Ajouter**.
+1. Ouvrez **https://mupglobalsarl.github.io/pv/installer.html** dans **Safari** (pas dans WhatsApp, pas en navigation privée).
+2. **iOS 26** : touchez **⋯** (à droite de la barre d'adresse) → **Partager ⇧** → **« Sur l'écran d'accueil »** → laissez activé **« Ouvrir en tant qu'app web »** → **Ajouter**.
+   **iOS 18 et plus ancien** : touchez **Partager ⇧** → **« Sur l'écran d'accueil »** → **Ajouter**.
 3. **Ouvrez l'icône MUPGLOBAL PV** et demandez la clé **depuis l'icône** (sur iPhone, l'icône a son propre code d'appareil).
 
 ## Ce que fait l'application
