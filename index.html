@@ -1568,6 +1568,7 @@ function unifilaireMobileSVG(R, S) {
     const cook = (x, y) => boxS(x, y, `<circle cx="${x - 4.5}" cy="${y + 6}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x + 4.5}" cy="${y + 6}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x - 4.5}" cy="${y + 13}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x + 4.5}" cy="${y + 13}" r="2.6" fill="none" stroke="${AC}"/>`); // appareil de cuisson
     const wash = (x, y) => boxS(x, y, `<circle cx="${x}" cy="${y + 9}" r="5.5" fill="none" stroke="${AC}" stroke-width="1.1"/>`); // lave-linge
     const pcS = (x, y) => `<rect x="${x - 10}" y="${y}" width="20" height="13" rx="1" fill="${BG}" stroke="${AC}" stroke-width="1.3"/><rect x="${x - 7}" y="${y + 2.5}" width="14" height="8" fill="none" stroke="${AC}" stroke-width="0.8"/>` + L(x, y + 13, x, y + 16, AC, 1.3) + L(x - 6, y + 16.5, x + 6, y + 16.5, AC, 1.5); // poste informatique (ordinateur)
+    const tvS = (x, y) => `<rect x="${x - 11}" y="${y}" width="22" height="15" rx="2" fill="${BG}" stroke="${AC}" stroke-width="1.3"/>` + t(x, y + 10.5, "TV", { fs: 7.5, b: 1, fill: AC }) + L(x - 7, y + 15, x - 8.5, y + 18, AC, 1.3) + L(x + 7, y + 15, x + 8.5, y + 18, AC, 1.3); // téléviseur / audiovisuel
     const clim = (x, y) => boxS(x, y, `<path d="M${x} ${y + 3} v12 M${x - 5.2} ${y + 6} l10.4 6 M${x - 5.2} ${y + 12} l10.4 -6" stroke="${AC}" stroke-width="1.1"/>`) + t(x + 12, y + 4, "M", { a: "start", fs: 6, b: 1, fill: AC }); // climatiseur (froid, compresseur)
     const tri = S.phases === "Triphasé", hyb = S.mode === "Hybride", grp = S.groupe === "Oui";
     const sh = (m) => String(m || "").replace("MultiPlus-II ", "MP-II ").replace("-EU", "").replace("SmartSolar ", "");
@@ -1772,7 +1773,8 @@ function unifilaireMobileSVG(R, S) {
         return "lum"; if (/climat|clim\b|split/i.test(c))
         return "clim"; if (/pompe|moteur|surpress|compresseur|forage/i.test(c))
         return "mot"; if (/froid|réfrig|refrig|congél|congel|frigo|fontaine|chambre froide/i.test(c))
-        return "froid"; if (/informatique|ordinateur|\bpc\b|laptop|imprimante|routeur|wi-?fi|modem|serveur/i.test(c))
+        return "froid"; if (/audiovisuel|t[ée]l[ée](?!ph)|\btv\b|d[ée]codeur|canal\+|home.?cin|\bsono\b|radio|hi-?fi|parabole|vid[ée]oprojecteur/i.test(c))
+        return "av"; if (/informatique|ordinateur|\bpc\b|laptop|imprimante|routeur|wi-?fi|modem|serveur/i.test(c))
         return "info"; return "pc"; };
     let cir = [];
     const pw = (l) => (+l.q || 0) * (+l.p || 0);
@@ -1785,15 +1787,15 @@ function unifilaireMobileSVG(R, S) {
         const key = k === "pc" ? "pc:" + (l.cat || "Prises") : k;
         let c = cir.find((x) => x.key === key);
         if (!c) {
-            c = { key, k, nom: k === "lum" ? "Éclairage" : k === "info" ? "Informatique" : k === "froid" ? "Froid" : k === "mot" ? "Moteurs" : (String(l.cat || "").replace(/ & .*/, "").trim() || "Prises"), it: [], P: 0 };
+            c = { key, k, nom: k === "lum" ? "Éclairage" : k === "info" ? "Informatique" : k === "av" ? "Audiovisuel" : k === "froid" ? "Froid" : k === "mot" ? "Moteurs" : (String(l.cat || "").replace(/ & .*/, "").trim() || "Prises"), it: [], P: 0 };
             cir.push(c);
         }
         c.it.push(l);
         c.P += P;
     });
-    const ordre = { lum: 0, info: 0.5, pc: 1, froid: 2, mot: 3, spe: 4, clim: 5 };
+    const ordre = { lum: 0, info: 0.5, av: 0.7, pc: 1, froid: 2, mot: 3, spe: 4, clim: 5 };
     const SYM = { lamp: [lamp, "Point lumineux"], sock: [sockT, "Prise 2P+T"], sockS: [sockS, "Prise spécialisée"], frig: [(x, y) => frig(x, y, 1), "Réfrigérateur"], cong: [(x, y) => frig(x, y, 3), "Congélateur"],
-        heat: [heat, "Chauffe-eau / chauffage"], cook: [cook, "Cuisson"], wash: [wash, "Lave-linge"], clim: [clim, "Climatiseur"], pc: [pcS, "Ordinateur / informatique"], mot: [mot, "Moteur, pompe M~"] };
+        heat: [heat, "Chauffe-eau / chauffage"], cook: [cook, "Cuisson"], wash: [wash, "Lave-linge"], clim: [clim, "Climatiseur"], pc: [pcS, "Ordinateur / informatique"], tv: [tvS, "Téléviseur / audiovisuel"], mot: [mot, "Moteur, pompe M~"] };
     const used = new Set();
     const symOf = (c) => {
         const big = c.it.slice().sort((a, b) => pw(b) - pw(a))[0] || {}, nm = `${big.nom || ""} ${big.cat || ""}`;
@@ -1812,14 +1814,16 @@ function unifilaireMobileSVG(R, S) {
             return "wash";
         if (c.k === "info")
             return "pc";
+        if (c.k === "av")
+            return "tv";
         if (c.k === "froid")
             return /congél|congel|chambre froide/i.test(allN) ? "cong" : /réfrig|refrig|frigo/i.test(allN) ? "frig" : "sockS";
         return c.k === "spe" ? "sockS" : "sock";
     };
     cir.sort((a, b) => ordre[a.k] - ordre[b.k]);
-    const MAXC = 8;
+    const MAXC = 10;
     while (cir.length > MAXC) { // regroupe les deux plus petits circuits de prises / froid
-        const m = cir.map((c, i) => [c, i]).filter(([c]) => c.k !== "lum" && c.k !== "info" && !c.ded).sort((a, b) => a[0].P - b[0].P);
+        const m = cir.map((c, i) => [c, i]).filter(([c]) => c.k !== "lum" && c.k !== "info" && c.k !== "av" && !c.ded).sort((a, b) => a[0].P - b[0].P);
         const pool = m.length >= 2 ? m : cir.map((c, i) => [c, i]).filter(([c]) => c.k !== "lum").sort((a, b) => a[0].P - b[0].P);
         if (pool.length < 2)
             break;
@@ -1833,7 +1837,10 @@ function unifilaireMobileSVG(R, S) {
     }
     const yR = yE + 44;
     if (cir.length) {
-        const n = cir.length, cw = Math.min(64, (W - 16) / n), x0 = W / 2 - cw * (n - 1) / 2;
+        const n = cir.length, cw = Math.min(64, (W - 16) / n), x0 = Math.min(W / 2 - cw * (n - 1) / 2, W - 34 - cw * (n - 1));
+        if (cw < 50)
+            cir.forEach((c) => { if (c.nom === "Climatisation")
+                c.nom = "Clim."; });
         s += t(8, yE + 36, "CIRCUITS TERMINAUX ET RÉCEPTEURS DU PROJET", { a: "start", fs: 7.5, b: 1 });
         // affectation aux différentiels (groupes contigus)
         const per = Math.ceil(n / nid);
@@ -3775,7 +3782,7 @@ function vApp() {
   <div class="h-sec"><h2>${S.loads.length} appareil${S.loads.length > 1 ? "s" : ""}</h2><span class="small muted">Touchez pour modifier</span></div>
   ${used.length > 1 ? `<div class="chips" role="group" aria-label="Filtrer par local"><button type="button" class="chip locf" data-locf="" aria-pressed="${!LOCF}">Tous</button>${used.map((k) => `<button type="button" class="chip locf" data-locf="${esc(k)}" aria-pressed="${LOCF === k}">${esc(k)}</button>`).join("")}</div>` : ""}
   <div class="loads">${S.loads.map((l, i) => { if (LOCF && ((l.loc || "").trim() || "Non précisé") !== LOCF)
-        return ""; const r = R.loads[i]; return `<button type="button" class="load ${l.on === false ? "off" : ""}" data-edit="${i}"><span class="ic">${catIcon(l.cat === "Autre" && /ordinateur|\bpc\b|laptop|imprimante|routeur|wi-?fi|modem|serveur/i.test(l.nom || "") ? "Informatique" : l.cat)}</span><span style="min-width:0"><span class="nm">${l.q > 1 ? l.q + " × " : ""}${esc(l.nom)}</span><span class="sub" style="display:block">${l.loc ? `<b>${esc(l.loc)}</b> · ` : ""}${n0(l.p)} W · jour ${n1(+l.hj || 0)} h · nuit ${n1(+l.hn || 0)} h${l.on === false ? " · exclu" : ""}</span></span><span class="en">${n0(r.E)}<small>Wh/j</small></span></button>`; }).join("")}</div>
+        return ""; const r = R.loads[i]; return `<button type="button" class="load ${l.on === false ? "off" : ""}" data-edit="${i}"><span class="ic">${catIcon(l.cat !== "Autre" ? l.cat : /ordinateur|\bpc\b|laptop|imprimante|routeur|wi-?fi|modem|serveur/i.test(l.nom || "") ? "Informatique" : /t[ée]l[ée](?!ph)|\btv\b|d[ée]codeur|canal\+|radio|hi-?fi|parabole/i.test(l.nom || "") ? "Audiovisuel" : l.cat)}</span><span style="min-width:0"><span class="nm">${l.q > 1 ? l.q + " × " : ""}${esc(l.nom)}</span><span class="sub" style="display:block">${l.loc ? `<b>${esc(l.loc)}</b> · ` : ""}${n0(l.p)} W · jour ${n1(+l.hj || 0)} h · nuit ${n1(+l.hn || 0)} h${l.on === false ? " · exclu" : ""}</span></span><span class="en">${n0(r.E)}<small>Wh/j</small></span></button>`; }).join("")}</div>
   <div class="h-sec"><h2>Ajouter un appareil</h2></div>
   <div class="chips" role="list">${PRESETS.map((p, i) => `<button type="button" class="chip" data-preset="${i}" role="listitem">+ ${esc(p[0])}</button>`).join("")}</div>
   <button type="button" class="btn ghost wide" data-new>Autre appareil (saisie libre)</button>
