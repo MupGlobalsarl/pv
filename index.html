@@ -1567,6 +1567,7 @@ function unifilaireMobileSVG(R, S) {
     const heat = (x, y) => boxS(x, y, `<path d="M${x - 6} ${y + 9} l2 -4 l2.5 8 l2.5 -8 l2.5 8 l2.5 -8 l2 4" fill="none" stroke="${AC}" stroke-width="1"/>`); // chauffe-eau / chauffage (résistance)
     const cook = (x, y) => boxS(x, y, `<circle cx="${x - 4.5}" cy="${y + 6}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x + 4.5}" cy="${y + 6}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x - 4.5}" cy="${y + 13}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x + 4.5}" cy="${y + 13}" r="2.6" fill="none" stroke="${AC}"/>`); // appareil de cuisson
     const wash = (x, y) => boxS(x, y, `<circle cx="${x}" cy="${y + 9}" r="5.5" fill="none" stroke="${AC}" stroke-width="1.1"/>`); // lave-linge
+    const pcS = (x, y) => `<rect x="${x - 10}" y="${y}" width="20" height="13" rx="1" fill="${BG}" stroke="${AC}" stroke-width="1.3"/><rect x="${x - 7}" y="${y + 2.5}" width="14" height="8" fill="none" stroke="${AC}" stroke-width="0.8"/>` + L(x, y + 13, x, y + 16, AC, 1.3) + L(x - 6, y + 16.5, x + 6, y + 16.5, AC, 1.5); // poste informatique (ordinateur)
     const clim = (x, y) => boxS(x, y, `<path d="M${x} ${y + 3} v12 M${x - 5.2} ${y + 6} l10.4 6 M${x - 5.2} ${y + 12} l10.4 -6" stroke="${AC}" stroke-width="1.1"/>`) + t(x + 12, y + 4, "M", { a: "start", fs: 6, b: 1, fill: AC }); // climatiseur (froid, compresseur)
     const tri = S.phases === "Triphasé", hyb = S.mode === "Hybride", grp = S.groupe === "Oui";
     const sh = (m) => String(m || "").replace("MultiPlus-II ", "MP-II ").replace("-EU", "").replace("SmartSolar ", "");
@@ -1771,7 +1772,8 @@ function unifilaireMobileSVG(R, S) {
         return "lum"; if (/climat|clim\b|split/i.test(c))
         return "clim"; if (/pompe|moteur|surpress|compresseur|forage/i.test(c))
         return "mot"; if (/froid|réfrig|refrig|congél|congel|frigo|fontaine|chambre froide/i.test(c))
-        return "froid"; return "pc"; };
+        return "froid"; if (/informatique|ordinateur|\bpc\b|laptop|imprimante|routeur|wi-?fi|modem|serveur/i.test(c))
+        return "info"; return "pc"; };
     let cir = [];
     const pw = (l) => (+l.q || 0) * (+l.p || 0);
     acl.forEach((l) => {
@@ -1783,15 +1785,15 @@ function unifilaireMobileSVG(R, S) {
         const key = k === "pc" ? "pc:" + (l.cat || "Prises") : k;
         let c = cir.find((x) => x.key === key);
         if (!c) {
-            c = { key, k, nom: k === "lum" ? "Éclairage" : k === "froid" ? "Froid" : k === "mot" ? "Moteurs" : (String(l.cat || "").replace(/ & .*/, "").trim() || "Prises"), it: [], P: 0 };
+            c = { key, k, nom: k === "lum" ? "Éclairage" : k === "info" ? "Informatique" : k === "froid" ? "Froid" : k === "mot" ? "Moteurs" : (String(l.cat || "").replace(/ & .*/, "").trim() || "Prises"), it: [], P: 0 };
             cir.push(c);
         }
         c.it.push(l);
         c.P += P;
     });
-    const ordre = { lum: 0, pc: 1, froid: 2, mot: 3, spe: 4, clim: 5 };
+    const ordre = { lum: 0, info: 0.5, pc: 1, froid: 2, mot: 3, spe: 4, clim: 5 };
     const SYM = { lamp: [lamp, "Point lumineux"], sock: [sockT, "Prise 2P+T"], sockS: [sockS, "Prise spécialisée"], frig: [(x, y) => frig(x, y, 1), "Réfrigérateur"], cong: [(x, y) => frig(x, y, 3), "Congélateur"],
-        heat: [heat, "Chauffe-eau / chauffage"], cook: [cook, "Cuisson"], wash: [wash, "Lave-linge"], clim: [clim, "Climatiseur"], mot: [mot, "Moteur, pompe M~"] };
+        heat: [heat, "Chauffe-eau / chauffage"], cook: [cook, "Cuisson"], wash: [wash, "Lave-linge"], clim: [clim, "Climatiseur"], pc: [pcS, "Ordinateur / informatique"], mot: [mot, "Moteur, pompe M~"] };
     const used = new Set();
     const symOf = (c) => {
         const big = c.it.slice().sort((a, b) => pw(b) - pw(a))[0] || {}, nm = `${big.nom || ""} ${big.cat || ""}`;
@@ -1808,6 +1810,8 @@ function unifilaireMobileSVG(R, S) {
             return "cook";
         if (one && /lave-linge|machine à laver|machine a laver|lave linge|lave-vaisselle/i.test(nm))
             return "wash";
+        if (c.k === "info")
+            return "pc";
         if (c.k === "froid")
             return /congél|congel|chambre froide/i.test(allN) ? "cong" : /réfrig|refrig|frigo/i.test(allN) ? "frig" : "sockS";
         return c.k === "spe" ? "sockS" : "sock";
@@ -1815,7 +1819,7 @@ function unifilaireMobileSVG(R, S) {
     cir.sort((a, b) => ordre[a.k] - ordre[b.k]);
     const MAXC = 8;
     while (cir.length > MAXC) { // regroupe les deux plus petits circuits de prises / froid
-        const m = cir.map((c, i) => [c, i]).filter(([c]) => c.k !== "lum" && !c.ded).sort((a, b) => a[0].P - b[0].P);
+        const m = cir.map((c, i) => [c, i]).filter(([c]) => c.k !== "lum" && c.k !== "info" && !c.ded).sort((a, b) => a[0].P - b[0].P);
         const pool = m.length >= 2 ? m : cir.map((c, i) => [c, i]).filter(([c]) => c.k !== "lum").sort((a, b) => a[0].P - b[0].P);
         if (pool.length < 2)
             break;
@@ -3771,7 +3775,7 @@ function vApp() {
   <div class="h-sec"><h2>${S.loads.length} appareil${S.loads.length > 1 ? "s" : ""}</h2><span class="small muted">Touchez pour modifier</span></div>
   ${used.length > 1 ? `<div class="chips" role="group" aria-label="Filtrer par local"><button type="button" class="chip locf" data-locf="" aria-pressed="${!LOCF}">Tous</button>${used.map((k) => `<button type="button" class="chip locf" data-locf="${esc(k)}" aria-pressed="${LOCF === k}">${esc(k)}</button>`).join("")}</div>` : ""}
   <div class="loads">${S.loads.map((l, i) => { if (LOCF && ((l.loc || "").trim() || "Non précisé") !== LOCF)
-        return ""; const r = R.loads[i]; return `<button type="button" class="load ${l.on === false ? "off" : ""}" data-edit="${i}"><span class="ic">${catIcon(l.cat)}</span><span style="min-width:0"><span class="nm">${l.q > 1 ? l.q + " × " : ""}${esc(l.nom)}</span><span class="sub" style="display:block">${l.loc ? `<b>${esc(l.loc)}</b> · ` : ""}${n0(l.p)} W · jour ${n1(+l.hj || 0)} h · nuit ${n1(+l.hn || 0)} h${l.on === false ? " · exclu" : ""}</span></span><span class="en">${n0(r.E)}<small>Wh/j</small></span></button>`; }).join("")}</div>
+        return ""; const r = R.loads[i]; return `<button type="button" class="load ${l.on === false ? "off" : ""}" data-edit="${i}"><span class="ic">${catIcon(l.cat === "Autre" && /ordinateur|\bpc\b|laptop|imprimante|routeur|wi-?fi|modem|serveur/i.test(l.nom || "") ? "Informatique" : l.cat)}</span><span style="min-width:0"><span class="nm">${l.q > 1 ? l.q + " × " : ""}${esc(l.nom)}</span><span class="sub" style="display:block">${l.loc ? `<b>${esc(l.loc)}</b> · ` : ""}${n0(l.p)} W · jour ${n1(+l.hj || 0)} h · nuit ${n1(+l.hn || 0)} h${l.on === false ? " · exclu" : ""}</span></span><span class="en">${n0(r.E)}<small>Wh/j</small></span></button>`; }).join("")}</div>
   <div class="h-sec"><h2>Ajouter un appareil</h2></div>
   <div class="chips" role="list">${PRESETS.map((p, i) => `<button type="button" class="chip" data-preset="${i}" role="listitem">+ ${esc(p[0])}</button>`).join("")}</div>
   <button type="button" class="btn ghost wide" data-new>Autre appareil (saisie libre)</button>
