@@ -304,6 +304,45 @@ th { color: var(--muted); font-weight: 600; font-size: 12px }
   .view:not([hidden]) { display: block !important }
   body { background: #fff; color: #000 }
 }
+/* tableau de bord animé */
+.dz { background: radial-gradient(120% 80% at 0% 0%, #17304F 0%, #0F1C2E 55%, #0B1523 100%); color: #E6EEF7; border-radius: 18px; padding: 14px 12px 12px; display: grid; gap: 10px; box-shadow: 0 10px 30px rgba(8,20,40,.35); overflow: hidden }
+.dz-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px }
+.dz-eye { font: 700 11px/1.2 var(--body); letter-spacing: .08em; text-transform: uppercase; color: #F5B301 }
+.dz-title { font: 700 16px/1.25 var(--display); margin-top: 3px }
+.dz-status { flex: none; display: inline-flex; align-items: center; gap: 6px; font: 700 12px var(--body); padding: 5px 10px; border-radius: 99px; background: #13351F; color: #6EE7A0; border: 1px solid #1F5E37 }
+.dz-status.ko { background: #3A2412; color: #FFB066; border-color: #6B3F14 }
+.dz-status i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 0 currentColor; animation: dzpulse 1.8s infinite }
+@keyframes dzpulse { 0% { box-shadow: 0 0 0 0 rgba(110,231,160,.6) } 70% { box-shadow: 0 0 0 8px rgba(110,231,160,0) } 100% { box-shadow: 0 0 0 0 rgba(110,231,160,0) } }
+.dz-sky { height: 38px; margin: 0 -4px -6px } .dz-sky svg { width: 100%; height: 100% } #dz-sun { filter: drop-shadow(0 0 6px #F5B301) }
+.dz-svg { width: 100%; height: auto; display: block; --sp: 1s; font-family: var(--body) }
+.dz-line { fill: none; stroke: #24405F; stroke-width: 4; stroke-linecap: round }
+.dz-flow { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 2 12; animation: dzflow var(--sp) linear infinite }
+.dz-flow.sol { stroke: #F5B301; filter: drop-shadow(0 0 3px rgba(245,179,1,.8)) } .dz-flow.eau { stroke: #3FA9F5; filter: drop-shadow(0 0 3px rgba(63,169,245,.8)) }
+.dz-flow.off { opacity: 0; animation: none }
+@keyframes dzflow { to { stroke-dashoffset: -14 } }
+.dz-node rect { transition: stroke .3s }
+#dz-lvl, #dz-wave { transition: y .3s }
+.dz-ctrl { display: flex; align-items: center; gap: 10px }
+.dz-play { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 1px solid #2E5378; background: #16283F; color: #F5B301; font-size: 14px; cursor: pointer }
+.dz-ctrl input { flex: 1; accent-color: #F5B301; min-width: 0 }
+.dz-day { flex: none; font-size: 11.5px; color: #9FB4CC; max-width: 120px; text-align: right; line-height: 1.2 }
+.dz-today { background: #16283F; border: 1px solid #24405F; border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px }
+.dz-tl { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: #9FB4CC } .dz-tl b { color: #fff; font: 800 18px var(--display) } .dz-tl.small { font-size: 11px }
+.dz-bar { position: relative; height: 10px; border-radius: 99px; background: #0E1A2A; overflow: visible } .dz-bar i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 99px; background: linear-gradient(90deg, #1D6FB8, #3FA9F5) }
+.dz-bar em { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #F5B301; border-radius: 2px }
+.dz-gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+.dz-gauge { background: #16283F; border: 1px solid #24405F; border-radius: 12px; padding: 8px 4px; text-align: center; display: grid; justify-items: center; gap: 2px; min-width: 0 }
+.dz-gauge svg { width: 72px; height: 72px } .dz-arc { transition: stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1) }
+.dz-gl { font: 700 11.5px/1.2 var(--body); color: #E6EEF7 } .dz-gs { font-size: 10.5px; color: #9FB4CC; overflow-wrap: anywhere }
+.dz-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
+.dz-kpis div { background: #16283F; border: 1px solid #24405F; border-radius: 12px; padding: 9px 11px; display: grid; gap: 2px; min-width: 0 }
+.dz-kpis span { font-size: 11.5px; color: #9FB4CC } .dz-kpis b { font: 800 17px/1.2 var(--display); color: #fff; overflow-wrap: anywhere }
+.dz-kpis div:first-child b { color: #F5C542 }
+@media (prefers-reduced-motion: reduce) { .dz-flow { animation: none; stroke-dasharray: none } .dz-status i { animation: none } .dz-arc { transition: none } }
+.dz-flow.res { stroke: #9AA9BA } .dz-flow.cons { stroke: #F0883E; filter: drop-shadow(0 0 3px rgba(240,136,62,.8)) } .dz-flow.batc { stroke: #38C172; filter: drop-shadow(0 0 3px rgba(56,193,114,.8)) }
+.dz-flow.rev { animation-direction: reverse }
+.dz-sky { position: relative } .dz-clock { position: absolute; right: 6px; top: 0; font: 800 15px var(--display); color: #F5C542 }
+#pz-lvl { transition: y .4s, fill .4s } #pz-sunc { filter: drop-shadow(0 0 6px #F5B301); transition: opacity .4s }
 </style>
 
 <header class="top">
@@ -3393,6 +3432,138 @@ function compact(v) { const a = Math.abs(v); return a >= 1e6 ? n1(v / 1e6) + " M
 /* ---------- vue Résultats ---------- */
 const kv = (a, b) => { const plain = String(b).replace(/<[^>]+>/g, ""); return `<div class="kv"><span>${a}</span><span${plain.length <= 22 ? ' style="white-space:nowrap"' : ""}>${b}</span></div>`; };
 const stat = (a, b) => `<div><div class="l">${a}</div><div class="sv2">${b}</div></div>`;
+/* ---------- tableau de bord animé (page Résultats PV) ---------- */
+const PIC = {
+    sun: '<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>',
+    pv: '<path d="M3 17 6 6h12l3 11z"/><path d="M4.5 11.5h15M9 6l-1.5 11M15 6l1.5 11M12 17v4M8 21h8"/>',
+    inv: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9h8M8 14c1.3-2 2.7-2 4 0s2.7 2 4 0"/>',
+    bat: '<rect x="3" y="7" width="16" height="11" rx="2"/><path d="M21 11v3M7 12.5h3M8.5 11v3M13 12.5h3"/>',
+    load: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M12 13v3"/>',
+    grid: '<path d="M12 2 7 22M12 2l5 20M8.5 9h7M7.5 14h9M4 6h16"/>',
+};
+const pico = (k, c) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PIC[k]}</svg>`;
+const pw = (w) => (Math.abs(w) >= 1000 ? n2(w / 1000) + " kW" : n0(w) + " W");
+function pring(v, max, col, label, txt, sub) {
+    const r = 30, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, v / max));
+    return `<div class="dz-gauge"><svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="${r}" fill="none" stroke="#24405F" stroke-width="7"/><circle class="dz-arc" cx="40" cy="40" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${c.toFixed(1)}" data-off="${(c * (1 - f)).toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="45" text-anchor="middle" font-size="16" font-weight="800" fill="#E6EEF7" font-family="var(--display)">${txt}</text></svg><div class="dz-gl">${label}</div><div class="dz-gs">${sub}</div></div>`;
+}
+function pvDash() {
+    const r = R, hyb = S.mode === "Hybride", gen = S.groupe === "Oui", src = hyb || gen;
+    const ko = r.checks.filter((c) => c[0] === "ko").length;
+    const node = (x, y, id, icon, col, title, sub) => `<g transform="translate(${x},${y})"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/><g transform="translate(10,10)">${pico(icon, col)}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">${title}</text><text id="${id}" x="12" y="52" font-size="19" fill="#FFFFFF" font-weight="800" font-family="var(--display)">0 W</text><text id="${id}s" x="12" y="66" font-size="10.5" fill="#9FB4CC">${sub}</text></g>`;
+    const flow = (d, cls, id) => `<path d="${d}" class="dz-line"/><path id="${id}" d="${d}" class="dz-flow ${cls}"/>`;
+    const svg = `<svg class="dz-svg" viewBox="0 0 360 318" role="img" aria-label="Flux d'énergie de l'installation au cours de la journée">
+    <defs><clipPath id="pzclip"><rect width="150" height="74" rx="12"/></clipPath></defs>
+    ${flow("M95 94 V120 Q95 128 105 128 H120", "sol", "pzf1")}
+    ${src ? flow("M265 94 V120 Q265 128 255 128 H240", "res", "pzf2") : ""}
+    ${flow("M230 202 V236", "cons", "pzf3")}
+    ${flow("M130 202 V236", "batc", "pzf4")}
+    ${node(20, 20, "pz-pv", "pv", "#F5B301", "Champ PV", `${n1(r.PPVINST / 1000)} kWc · ${r.NMOD} modules`)}
+    ${src ? node(190, 20, "pz-g", "grid", "#9AA9BA", hyb ? "Réseau SNEL" : "Groupe électrogène", hyb ? "la nuit, si disponible" : `${r.GKVA} kVA en secours`)
+        : `<g transform="translate(190,20)"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/><g transform="translate(10,10)">${pico("sun", "#F5B301")}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">Ensoleillement</text><text id="pz-sun" x="12" y="52" font-size="19" fill="#fff" font-weight="800" font-family="var(--display)">Nuit</text><text x="12" y="66" font-size="10.5" fill="#9FB4CC">HSP ${n2(r.HSP)} h · autonome</text></g>`}
+    <g transform="translate(105,128)"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/><g transform="translate(10,10)">${pico("inv", "#7DB6FF")}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">Onduleur / chargeur</text><text id="pz-inv" x="12" y="52" font-size="19" fill="#fff" font-weight="800" font-family="var(--display)">—</text><text x="12" y="66" font-size="10.5" fill="#9FB4CC">${r.NINV} × ${esc(short(r.INVMODEL)).slice(0, 26)}</text></g>
+    <g transform="translate(20,236)"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/>
+      <g clip-path="url(#pzclip)"><rect id="pz-lvl" x="0" y="74" width="150" height="74" fill="#1E7A4D" opacity=".5"/></g>
+      <g transform="translate(10,10)">${pico("bat", "#38C172")}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">Batteries</text>
+      <text id="pz-soc" x="12" y="52" font-size="19" fill="#fff" font-weight="800" font-family="var(--display)">100 %</text><text id="pz-bs" x="12" y="66" font-size="10.5" fill="#9FB4CC">${n1(r.EBATINST)} kWh · ${r.VSYS} V</text></g>
+    ${node(190, 236, "pz-c", "load", "#F0883E", "Consommation", `${n1((r.EJAC + r.EJDC + r.ENAC + r.ENDC) / 1000)} kWh par jour`)}
+  </svg>`;
+    return `<section class="dz full" aria-label="Tableau de bord">
+   <div class="dz-head"><div><div class="dz-eye">Système proposé · ${esc(S.mode === "Hybride" ? "hybride SNEL" : "autonome")}</div><div class="dz-title">${esc(S.marque)} · ${esc(S.phases.toLowerCase())}</div></div>
+     <span class="dz-status ${ko ? "ko" : "ok"}"><i></i>${ko ? ko + " point(s) à vérifier" : "Système conforme"}</span></div>
+   <div class="dz-sky"><svg viewBox="0 0 360 46" preserveAspectRatio="none"><path d="M10 42 Q180 -30 350 42" fill="none" stroke="#24405F" stroke-dasharray="3 5"/><circle id="pz-sunc" cx="10" cy="42" r="7" fill="#F5B301"/></svg><span id="pz-clock" class="dz-clock">00:00</span></div>
+   ${svg}
+   <div class="dz-ctrl"><button type="button" class="dz-play" id="pz-play" aria-label="Lecture / pause">❚❚</button><input type="range" id="pz-h" min="0" max="23.99" step="0.05" value="6" aria-label="Heure de la journée"><span class="dz-day">Journée type · HSP ${n2(r.HSP)} h</span></div>
+   <div class="dz-today"><div class="dz-tl"><span>Énergie solaire produite aujourd'hui</span><b id="pz-day">0 kWh</b></div><div class="dz-bar"><i id="pz-dayb" style="background:linear-gradient(90deg,#B98500,#F5B301)"></i></div><div class="dz-tl small"><span>Consommée <b id="pz-cons" style="font-size:12px">0 kWh</b></span><span>Production prévue ${n1(r.PRODJ / 1000)} kWh</span></div></div>
+   <div class="dz-gauges">${pring(Math.min(r.COUV, 2), 1.5, r.COUV >= 1 ? "#38C172" : "#F0883E", "Couverture solaire", r.COUV > 9.99 ? "> 999 %" : pc(r.COUV), "production / besoin")}${pring(r.SOCMIN, 1, r.SOCMIN >= 1 - r.DOD + 0.05 ? "#38C172" : "#F0883E", "Charge mini batterie", pc(r.SOCMIN), "jour type")}${pring(r.FSOL, 1, "#F5B301", "Part solaire", pc(r.FSOL), "de l'énergie annuelle")}</div>
+   <div class="dz-kpis">
+     <div><span>Total TTC</span><b data-count="${r.TOTTTC}" data-suf=" ${esc(S.devise)}">0</b></div>
+     <div><span>Retour sur investissement</span><b>${r.ROI === null ? "plus de 20 ans" : n1(r.ROI) + " ans"}</b></div>
+     <div><span>Production annuelle</span><b data-count="${r.PRODAN}" data-suf=" kWh">0</b></div>
+     <div><span>Batteries</span><b>${r.NBAT} × ${n1(R.BAT.v)} V ${n0(R.BAT.ah)} Ah</b></div>
+   </div>
+  </section>`;
+}
+let PZ = null;
+function stopPvDash() { if (PZ && PZ.t)
+    clearInterval(PZ.t); PZ = null; }
+function startPvDash() {
+    stopPvDash();
+    if (view !== "res" || !document.getElementById("pz-h"))
+        return;
+    const reduce = (() => { try {
+        return matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+    catch (e) {
+        return false;
+    } })();
+    const d = R.sim.slice(24), sr = 12 - S.hjour / 2, ss = 12 + S.hjour / 2;
+    const at = (h) => { const i = Math.min(23, Math.max(0, Math.floor(h))), x = d[i], p = d[(i + 23) % 24], f = h - i; return { pv: x.pv, c: x.c, g: x.g, soc: p.soc + (x.soc - p.soc) * f, b: x.pv - x.c + x.g }; };
+    const cum = (h, k) => { let s = 0; for (let i = 0; i < 24 && i < h; i++)
+        s += d[i][k] * Math.min(1, h - i); return s; };
+    const set = (id, t) => { const e = document.getElementById(id); if (e)
+        e.textContent = t; };
+    const tog = (id, on, rev) => { const e = document.getElementById(id); if (e) {
+        e.classList.toggle("off", !on);
+        e.classList.toggle("rev", !!rev);
+    } };
+    function draw(h) {
+        const v = at(h), hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
+        set("pz-clock", `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`);
+        set("pz-pv", pw(v.pv));
+        set("pz-c", pw(v.c));
+        set("pz-inv", pw(v.c));
+        if (document.getElementById("pz-g"))
+            set("pz-g", v.g > 0 ? pw(v.g) : "En attente");
+        if (document.getElementById("pz-sun"))
+            set("pz-sun", h >= sr && h < ss ? "Jour" : "Nuit");
+        set("pz-soc", pc(v.soc));
+        set("pz-bs", v.b > 5 ? "Charge " + pw(v.b * R.ETABAT) : v.b < -5 ? "Décharge " + pw(-v.b) : `${n1(R.EBATINST)} kWh · ${R.VSYS} V`);
+        const L = document.getElementById("pz-lvl");
+        if (L) {
+            L.setAttribute("y", (74 - 74 * v.soc).toFixed(1));
+            L.setAttribute("fill", v.soc < 1 - R.DOD + 0.1 ? "#B5452E" : "#1E7A4D");
+        }
+        tog("pzf1", v.pv > 1);
+        tog("pzf2", v.g > 1);
+        tog("pzf3", v.c > 1);
+        tog("pzf4", Math.abs(v.b) > 5, v.b < 0);
+        const svg = document.querySelector(".dz-svg");
+        if (svg)
+            svg.style.setProperty("--sp", Math.max(0.35, 1.6 - (v.pv / Math.max(1, R.PPVINST * 0.8)) * 1.2).toFixed(2) + "s");
+        const day = cum(h, "pv");
+        set("pz-day", n1(day / 1000) + " kWh");
+        set("pz-cons", n1(cum(h, "c") / 1000) + " kWh");
+        const b = document.getElementById("pz-dayb");
+        if (b)
+            b.style.width = Math.min(100, (day / Math.max(1, R.PRODJ)) * 100).toFixed(1) + "%";
+        const up = h >= sr && h < ss, a = up ? (h - sr) / (ss - sr) : 0, sun = document.getElementById("pz-sunc");
+        if (sun) {
+            sun.style.opacity = up ? 1 : 0.15;
+            sun.setAttribute("cx", (10 + 340 * a).toFixed(1));
+            sun.setAttribute("cy", Math.max(8, 42 - 60 * Math.sin(Math.PI * a)).toFixed(1));
+        }
+        const r = document.getElementById("pz-h");
+        if (r && document.activeElement !== r)
+            r.value = h;
+    }
+    PZ = { h: reduce ? 12 : 5, play: !reduce, t: null };
+    const pb = document.getElementById("pz-play");
+    pb.textContent = PZ.play ? "❚❚" : "▶";
+    PZ.t = setInterval(() => { if (!PZ || !PZ.play)
+        return; PZ.h += 0.08; if (PZ.h >= 24)
+        PZ.h = 0; draw(PZ.h); }, 80);
+    pb.onclick = () => { PZ.play = !PZ.play; pb.textContent = PZ.play ? "❚❚" : "▶"; };
+    document.getElementById("pz-h").oninput = (e) => { PZ.play = false; pb.textContent = "▶"; PZ.h = +e.target.value; draw(PZ.h); };
+    draw(PZ.h);
+    requestAnimationFrame(() => document.querySelectorAll(".dz-arc").forEach((a) => (a.style.strokeDashoffset = a.dataset.off)));
+    document.querySelectorAll("[data-count]").forEach((el) => {
+        const to = +el.dataset.count, suf = el.dataset.suf || "", t0 = performance.now(), dur = reduce ? 0 : 900;
+        const step = (t) => { const k = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - k, 3); el.textContent = n0(to * e) + suf; if (k < 1)
+            requestAnimationFrame(step); };
+        requestAnimationFrame(step);
+    });
+}
 function vRes() {
     var _a;
     const r = R, eT = r.EJAC + r.EJDC + r.ENAC + r.ENDC, jour = r.EJAC + r.EJDC, nuit = r.ENAC + r.ENDC;
@@ -3400,16 +3571,7 @@ function vRes() {
     const chk = r.checks.map(([s, t]) => `<div class="chk ${s}">${svgI(s)}<span>${esc(t)}</span></div>`).join("");
     const d2 = r.sim.slice(24);
     return `
-  <div class="hero full">
-    <div class="head"><div><div class="eyebrow">Système proposé</div><h1>${esc(S.marque)} · ${esc(S.phases.toLowerCase())}</h1></div><span class="tag">${esc(S.mode === "Hybride" ? "Hybride SNEL" : "Autonome")}</span></div>
-    <div class="kit">
-      <div><div class="l">Champ photovoltaïque</div><div class="v">${n1(r.PPVINST / 1000)} <small>kWc</small></div><div class="d">${r.NMOD} modules de ${S.mod.p} Wc · ${r.NSTR} × ${r.NS} en série</div></div>
-      <div><div class="l">Stockage</div><div class="v">${n1(r.EBATINST)} <small>kWh</small></div><div class="d">${r.NBAT} batterie${r.NBAT > 1 ? "s" : ""} ${esc(S.battech.split(" ")[0])} ${R.BAT.v} V ${R.BAT.ah} Ah</div></div>
-      <div><div class="l">Onduleur / chargeur</div><div class="v">${r.NINV} <small>×</small></div><div class="d">${esc(r.INVMODEL)}</div></div>
-      <div><div class="l">${r.ISVIC ? "Régulateurs MPPT" : "Entrées MPPT intégrées"}</div><div class="v">${r.NMPPT} <small>×</small></div><div class="d">${r.ISVIC ? esc(R.MPPTSEL) : "dans l'onduleur hybride"}</div></div>
-    </div>
-    <div class="money"><div><div class="eyebrow">Total TTC</div><div class="v">${n0(r.TOTTTC)} <small class="muted" style="font-size:13px">${esc(S.devise)}</small></div></div><div><div class="eyebrow">Retour sur investissement</div><div class="v gold">${roi}</div></div></div>
-  </div>
+  ${pvDash()}
   <div class="card full" style="padding:8px"><canvas class="isocv" data-iso="static" style="width:100%;border-radius:10px"></canvas><div class="row" style="margin-top:8px"><button type="button" class="btn ghost" data-tab="iso">Vue 3D animée</button><button type="button" class="btn ghost" data-tab="uni">Schéma unifilaire</button><button type="button" class="btn ghost" data-tab="sim">Simulateur</button><button type="button" class="btn" data-tab="live">En direct</button></div></div>
   <div class="card energy">
     <div class="eyebrow">Consommation retenue</div>
@@ -4161,6 +4323,10 @@ function afterRender() {
         liveBind(R, S);
     else if (typeof LIVE !== "undefined")
         clearInterval(LIVE.timer);
+    if (view === "res")
+        startPvDash();
+    else
+        stopPvDash();
 }
 /* ---------- rendu ---------- */
 function render() {
