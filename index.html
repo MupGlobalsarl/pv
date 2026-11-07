@@ -722,7 +722,7 @@ CAT.bat.forEach((b, i) => (b[8] = BAT_BRANDS[i] || "Générique"));
 const MONTHS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 function defaults() {
     return {
-        projet: { nom: "Maison d'habitation – Lubumbashi", site: "Lubumbashi (Haut-Katanga, RD Congo)", client: "", tel: "", ref: "MUP-2026-001" },
+        projet: { nom: "Maison d'habitation – Lubumbashi", site: "Lubumbashi (Haut-Katanga, RD Congo)", client: "", tel: "", ref: "DV-2026-001" },
         hsp: [5.85, 5.85, 6.08, 6.08, 6.08, 6.34, 6.34, 6.34, 6.85, 6.85, 6.85, 5.85], base: "min",
         tmin: 5, tmax: 33, echauff: 25, vsys: "auto", protbat: "Fusible", battech: "Lithium LiFePO4", auto: 1, ks: 0.8, cosphi: 0.8,
         etaond: 0.93, etamppt: 0.98, etacab: 0.98, kpvloss: 0.9, marge: 1.1, vac: 230, hjour: 11,
@@ -2385,7 +2385,7 @@ function presSlides(R, S) {
     const items = [["panel", `${R.NMOD} modules ${S.mod.p} Wc`], ["inverter", `${R.NINV} × ${R.INVMODEL.replace("MultiPlus-II ", "MP-II ").replace("-EU", "")}`], ...(R.ISVIC ? [["mppt", `${R.NMPPT} régulateur(s) ${R.MPPTSEL.replace("SmartSolar ", "")}`]] : []),
         ["battery", `${R.NBAT} batteries · ${fmtN(R.EBATINST, 1)} kWh`], ["spd", "Parafoudres DC et AC"], ["rod", S.lps === "Oui" ? "Paratonnerre et terre" : "Mise à la terre"]];
     return [
-        `<div class="ps cover"><img class="a" style="--d:0ms" src="${LOGO}" alt=""><div class="a eyebrow2" style="--d:200ms">MUPGLOBAL SARL · Étude solaire</div><h2 class="a big" style="--d:350ms">L'énergie solaire pour ${xesc(cl)}</h2><p class="a" style="--d:600ms">${xesc(S.projet.site || "")} · ${new Date().toLocaleDateString("fr-FR")}</p></div>`,
+        `<div class="ps cover"><div class="a eyebrow2" style="--d:200ms">${xesc(emName())} · Étude solaire</div><h2 class="a big" style="--d:350ms">L'énergie solaire pour ${xesc(cl)}</h2><p class="a" style="--d:600ms">${xesc(S.projet.site || "")} · ${new Date().toLocaleDateString("fr-FR")}</p></div>`,
         `<div class="ps"><div class="a eyebrow2" style="--d:0ms">1 · Vos besoins</div><div class="a huge" style="--d:150ms"><span data-count="${eT}" data-dec="1">0</span> <small>kWh par jour</small></div>
       <div class="a pbarbox" style="--d:400ms"><span class="bjour" style="--w:${eT ? jour / eT * 100 : 0}%">Jour ${fmtN(jour, 1)} kWh</span><span class="bnuit" style="--w:${eT ? nuit / eT * 100 : 0}%">Nuit ${fmtN(nuit, 1)} kWh</span></div>
       <ul class="a plist" style="--d:700ms">${top.map((x) => `<li>${xesc(x.n)} <b>${fmtN(x.e / 1000, 1)} kWh/j</b></li>`).join("")}</ul></div>`,
@@ -2397,8 +2397,8 @@ function presSlides(R, S) {
         `<div class="ps"><div class="a eyebrow2" style="--d:0ms">5 · Le matériel</div><div class="pitems">${items.map(([t, l], i) => `<div class="a" style="--d:${150 + i * 150}ms">${productIcon(t, S.marque)}<span>${xesc(l)}</span></div>`).join("")}</div></div>`,
         `<div class="ps two"><div><div class="a eyebrow2" style="--d:0ms">6 · Votre investissement</div><div class="a huge" style="--d:150ms"><span data-count="${R.TOTTTC}" data-dec="0">0</span> <small>${xesc(cur)} TTC</small></div>
       <p class="a" style="--d:400ms">Économie : <b><span data-count="${R.ECOAN}" data-dec="0">0</span> ${xesc(cur)} par an</b><br>Retour sur investissement : <b>${roi} ans</b><br>Gain sur 20 ans : <b>${fmtN(R.GAIN20)} ${xesc(cur)}</b></p></div><div class="a" style="--d:300ms">${cumSVG}</div></div>`,
-        `<div class="ps"><div class="a eyebrow2" style="--d:0ms">7 · Pourquoi MUPGLOBAL SARL</div><ul class="plist big">${["Étude sur mesure selon vos appareils et vos horaires", "Matériel de marque (Victron, Deye, Growatt, Must) et batteries lithium", "Protections complètes : parafoudres, différentiels, paratonnerre, terre", "Installation, mise en service et suivi après-vente à Lubumbashi"].map((t, i) => `<li class="a" style="--d:${150 + i * 180}ms">${t}</li>`).join("")}</ul></div>`,
-        `<div class="ps cover"><div class="a eyebrow2" style="--d:0ms">Prochaine étape</div><h2 class="a big" style="--d:150ms">Lançons votre projet</h2><p class="a" style="--d:350ms">Visite technique et devis définitif</p><div class="a pcta" style="--d:550ms">${PHONE}</div><a class="a btn gold" style="--d:700ms" href="https://wa.me/${WA_NUM}?text=${encodeURIComponent("Bonjour MUPGLOBAL SARL, je souhaite lancer mon projet solaire (" + (S.projet.client || S.projet.nom) + ").")}" target="_blank" rel="noopener">Écrire sur WhatsApp</a></div>`,
+        `<div class="ps"><div class="a eyebrow2" style="--d:0ms">7 · Pourquoi ${xesc(emName())}</div><ul class="plist big">${["Étude sur mesure selon vos appareils et vos horaires", "Matériel de marque (Victron, Deye, Growatt, Must) et batteries lithium", "Protections complètes : parafoudres, différentiels, paratonnerre, terre", "Installation, mise en service et suivi après-vente"].map((t, i) => `<li class="a" style="--d:${150 + i * 180}ms">${t}</li>`).join("")}</ul></div>`,
+        `<div class="ps cover"><div class="a eyebrow2" style="--d:0ms">Prochaine étape</div><h2 class="a big" style="--d:150ms">Lançons votre projet</h2><p class="a" style="--d:350ms">Visite technique et devis définitif</p><div class="a pcta" style="--d:550ms">${xesc(EM.tel || emName())}</div><a class="a btn gold" style="--d:700ms${emWa() ? "" : ";display:none"}" href="https://wa.me/${emWa()}?text=${encodeURIComponent("Bonjour " + emName() + ", je souhaite lancer mon projet solaire (" + (S.projet.client || S.projet.nom) + ").")}" target="_blank" rel="noopener">Écrire sur WhatsApp</a></div>`,
     ];
 }
 function vPres(R, S) {
@@ -3115,8 +3115,9 @@ function vDevisDet(R, S) {
         l.items.map((d) => `<tr><td class="no">${d.no}</td><td>${esc(d.des)}${d.ref ? `<small>${esc(d.ref)}</small>` : ""}</td><td class="n">${fxNum(d.q)} ${d.u}</td><td class="n">${f(d.pu)}</td><td class="n">${f(d.m)}</td></tr>`).join("") +
         `<tr class="st"><td colspan="4">Sous-total lot ${l.no}</td><td class="n">${f(l.m)}</td></tr>`).join("");
     const mo = R.TOTMAT * S.rmo, trp = R.TOTMAT * S.rtr, imp = R.TOTMAT * S.rimp;
-    return FX_CSS + `<div class="dv" id="devis-doc">
-  <div class="dv-h"><img alt="" src="${LOGO}"><div><div class="eyebrow" style="color:rgba(255,255,255,.8)">${COMPANY} · Lubumbashi</div><h2>Devis détaillé</h2><div class="small" style="opacity:.85">N° ${esc(p.ref || "—")} · ${today.toLocaleDateString("fr-FR")}</div></div></div>
+    return FX_CSS + emForm(emOk() && !emLines().length) + `<div class="dv" id="devis-doc">
+  <div class="dv-h"><div><div class="eyebrow" style="color:rgba(255,255,255,.8)">Devis établi par</div><h2 style="margin:2px 0">${esc(emName())}</h2><div class="small" style="opacity:.9">${esc(emLines().join(" · ") || (emOk() ? "Coordonnées à compléter (Émetteur des devis)" : ""))}</div><div class="small" style="opacity:.85;margin-top:4px">Devis détaillé N° ${esc(p.ref || "—")} · ${today.toLocaleDateString("fr-FR")}</div></div></div>
+  ${emOk() ? "" : '<div class="chk ko" style="justify-content:center;font-weight:800">VERSION DE DÉMONSTRATION – DEVIS SANS VALEUR</div>'}
   <div class="dv-b">
     <div class="dv-id"><div><span>Client</span><b>${esc(p.client || "—")}</b>${p.tel ? `<small>${esc(p.tel)}</small>` : ""}</div><div><span>Projet</span><b>${esc(p.nom || "—")}</b><small>${esc(p.site || "")}</small></div>
       <div><span>Système</span><b>${fxNum(R.PPVINST / 1000, 2)} kWc · ${fxNum(R.EBATINST, 1)} kWh</b><small>${R.NINV} × ${esc(R.INVMODEL)}</small></div><div><span>Validité</span><b>30 jours</b><small>jusqu'au ${val.toLocaleDateString("fr-FR")}</small></div></div>
@@ -3132,18 +3133,18 @@ function vDevisDet(R, S) {
       <span>• Étude, fourniture, pose, mise en service et formation de l'utilisateur comprises dans la main d'œuvre.</span>
       <span>• Garanties selon les fabricants (modules, onduleur, batteries) ; installation selon NF C 15-100 / UTE C 15-712.</span>
       <span>• Délai et modalités de paiement à convenir à la commande.</span></div>
-    <div class="dv-sig"><div>Pour ${COMPANY}<br>signature et cachet</div><div>Bon pour accord – le client<br>date et signature</div></div>
-    <div class="small muted" style="text-align:center">${COMPANY} · WhatsApp ${PHONE} · ${MAIL}</div>
+    <div class="dv-sig"><div>Pour ${esc(emName())}<br>signature et cachet</div><div>Bon pour accord – le client<br>date et signature</div></div>
+    <div class="small muted" style="text-align:center">${esc(emMention())}</div>
   </div></div>
   <div class="row noprint"><button class="btn" type="button" data-dvcopy>Copier pour WhatsApp</button>${typeof OFFLINE !== "undefined" && OFFLINE ? '<button class="btn ghost" type="button" data-print>Imprimer / PDF</button>' : ""}<button class="btn ghost" type="button" data-tab="bud">Modifier les prix</button></div>
   <textarea id="dvtxt" class="noprint" readonly aria-label="Texte du devis" style="width:100%;min-height:120px;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);font:13px/1.4 var(--body)" hidden></textarea>`;
 }
 function devisText(R, S) {
     const c = S.devise, f = fxMoney, p = S.projet || {}, L = devisLignes(R);
-    const out = [`*${COMPANY} – DEVIS DÉTAILLÉ*`, `N° ${p.ref || "—"} du ${new Date().toLocaleDateString("fr-FR")} (valable 30 jours)`, `Client : ${p.client || "—"}${p.tel ? " – " + p.tel : ""}`, `Projet : ${p.nom || "—"}${p.site ? " – " + p.site : ""}`,
+    const out = [`*DEVIS DÉTAILLÉ – ${emName()}*`, ...emLines(), "", `N° ${p.ref || "—"} du ${new Date().toLocaleDateString("fr-FR")} (valable 30 jours)`, `Client : ${p.client || "—"}${p.tel ? " – " + p.tel : ""}`, `Projet : ${p.nom || "—"}${p.site ? " – " + p.site : ""}`,
         `Système : ${fxNum(R.PPVINST / 1000, 2)} kWc · ${fxNum(R.EBATINST, 1)} kWh · ${R.NINV} × ${R.INVMODEL}`, ""];
     L.forEach((l) => { out.push(`*Lot ${l.no} – ${l.lot}*`); l.items.forEach((d) => out.push(`${d.no}. ${d.des}${d.ref ? " (" + d.ref + ")" : ""} : ${fxNum(d.q)} ${d.u} × ${f(d.pu)} = ${f(d.m)} ${c}`)); out.push(`Sous-total : ${f(l.m)} ${c}`, ""); });
-    out.push(`Total matériel : ${f(R.TOTMAT)} ${c}`, `Main d'œuvre, transport, imprévus : ${f(R.TOTMO)} ${c}`, `Total HT : ${f(R.TOTHT)} ${c}`, `TVA ${fxNum(S.tva * 100)} % : ${f(R.TVAAMT)} ${c}`, `*TOTAL TTC : ${f(R.TOTTTC)} ${c}*`, "", `${COMPANY} – WhatsApp ${PHONE} – ${MAIL}`);
+    out.push(`Total matériel : ${f(R.TOTMAT)} ${c}`, `Main d'œuvre, transport, imprévus : ${f(R.TOTMO)} ${c}`, `Total HT : ${f(R.TOTHT)} ${c}`, `TVA ${fxNum(S.tva * 100)} % : ${f(R.TVAAMT)} ${c}`, `*TOTAL TTC : ${f(R.TOTTTC)} ${c}*`, "", `Établi par : ${emName()}${EM.tel ? " – " + EM.tel : ""}`, `_${emMention()}_`);
     return out.join("\n");
 }
 /* MUPGLOBAL SARL – rubrique « Liens utiles pour le dimensionnement » (sites officiels et gratuits) */
@@ -3194,6 +3195,48 @@ function vLiens(R, S) {
             L(`mailto:${MAIL}`, MAIL, "Envoyer un e-mail à MUPGLOBAL SARL.", "contact"),
         ]);
 }
+/* MUPGLOBAL SARL – émetteur des devis : chaque devis est établi au nom du titulaire de la licence (nom lu dans la clé, non modifiable). */
+const EMKEY = "mupglobal_pv_emetteur";
+let EM = {};
+try {
+    EM = JSON.parse(localStorage.getItem(EMKEY) || "{}") || {};
+}
+catch (e) {
+    EM = {};
+}
+const EMF = [["adr", "Adresse"], ["tel", "Téléphone / WhatsApp"], ["mail", "E-mail"], ["rccm", "RCCM"], ["idnat", "Id. Nat."], ["nif", "N° impôt (NIF)"]];
+function emOk() { return typeof LIC !== "undefined" && LIC.ok && !DEMO; }
+function emName() { return emOk() ? LIC.name : "VERSION DE DÉMONSTRATION"; }
+function emLic() { return emOk() ? `licence n° ${String(LIC.serial).padStart(4, "0")}` : "version de démonstration"; }
+function emLines() { const e = EM; return [e.adr, e.tel && "Tél. " + e.tel, e.mail, e.rccm && "RCCM " + e.rccm, e.idnat && "Id. Nat. " + e.idnat, e.nif && "NIF " + e.nif].filter(Boolean); }
+function emMention(doc = "ce devis") {
+    return emOk() ? `Document établi sous la seule responsabilité de ${emName()}, titulaire de la ${emLic()} du logiciel MUPGLOBAL. MUPGLOBAL SARL, éditeur du logiciel, n'est pas partie à ${doc} ni à son exécution.`
+        : "VERSION DE DÉMONSTRATION – document sans valeur contractuelle.";
+}
+function emWa() { const t = String(EM.tel || "").replace(/[^\d]/g, ""); return t.length >= 9 ? t : ""; }
+function emSave() { try {
+    localStorage.setItem(EMKEY, JSON.stringify(EM));
+}
+catch (e) { } }
+function emForm(open) {
+    const dis = emOk() ? "" : " disabled";
+    return `<details class="card noprint"${open ? " open" : ""}><summary>Émetteur des devis<span class="sv">${esc(emName())}</span></summary><div class="dbody form" style="gap:10px">
+    <p class="small muted" style="margin:0">Les devis, rapports et présentations sont établis <b>au nom du titulaire de la licence</b>, qui en répond auprès de ses clients. Le nom vient de la clé de licence et ne peut pas être modifié ; complétez vos coordonnées légales.</p>
+    <div class="f"><label>Raison sociale (titulaire de la licence)</label><input value="${esc(emName())}" disabled></div>
+    ${EMF.map(([k, l]) => `<div class="f"><label for="em_${k}">${l}</label><input id="em_${k}" data-em="${k}" value="${esc(EM[k] || "")}"${dis}></div>`).join("")}
+  </div></details>`;
+}
+document.addEventListener("change", (e) => {
+    const el = e.target;
+    if (!el.dataset || !el.dataset.em)
+        return;
+    if (!emOk())
+        return;
+    EM[el.dataset.em] = String(el.value || "").trim().slice(0, 120);
+    emSave();
+    if (typeof render === "function")
+        render();
+});
 </script>
 <script>"use strict";
 const OFFLINE = true;
@@ -3827,19 +3870,20 @@ function vBud() {
 /* ---------- vue Rapport ---------- */
 function reportText() {
     const r = R, c = S.devise, roi = r.ROI === null ? "plus de 20 ans" : n1(r.ROI) + " ans";
-    return [`*${COMPANY} – Étude solaire*`, `${S.projet.nom}${S.projet.client ? " – " + S.projet.client : ""}`, `Site : ${S.projet.site}`, `Réf. ${S.projet.ref} – ${new Date().toLocaleDateString("fr-FR")}`, "",
+    return [`*Étude solaire – ${emName()}*`, `${S.projet.nom}${S.projet.client ? " – " + S.projet.client : ""}`, `Site : ${S.projet.site}`, `Réf. ${S.projet.ref} – ${new Date().toLocaleDateString("fr-FR")}`, "",
         `*Besoins* : ${n1((r.EAC + r.EDC) / 1000)} kWh/jour, dont ${pc(r.PARTNUIT)} la nuit`,
         "", "*Système proposé*", `• Panneaux : ${r.NMOD} × ${S.mod.p} Wc = ${n1(r.PPVINST / 1000)} kWc`, `• Batteries : ${r.NBAT} × ${R.BAT.v} V ${R.BAT.ah} Ah = ${n1(r.EBATINST)} kWh`,
         `• Onduleur : ${r.NINV} × ${r.INVMODEL}`, r.ISVIC ? `• Régulateurs : ${r.NMPPT} × ${R.MPPTSEL}` : "• MPPT intégrés à l'onduleur", `• ${r.CONFIG}`,
         "", "*Budget*", `Total TTC : ${n0(r.TOTTTC)} ${c} (HT ${n0(r.TOTHT)} ${c})`, "", "*Rentabilité*", `Économie : ${n0(r.ECOAN)} ${c}/an – retour en ${roi}`, `Gain sur 20 ans : ${n0(r.GAIN20)} ${c}`, "",
-        `Contact ${COMPANY} : WhatsApp ${PHONE} – ${MAIL}`, DEMO ? "(Version de démonstration – exemple non contractuel)" : `(${licLabel()})`].join("\n");
+        `Contact : ${emName()}${EM.tel ? " – " + EM.tel : ""}${EM.mail ? " – " + EM.mail : ""}`, `_${emMention("cette étude")}_`].join("\n");
 }
 function vRapport() {
     const r = R, c = esc(S.devise), roi = r.ROI === null ? "plus de 20 ans" : n1(r.ROI) + " ans";
     const wa = "https://wa.me/?text=" + encodeURIComponent(reportText());
     return `
+  ${emForm(false)}
   <div class="report">
-    <div class="rh"><img alt="" src="${LOGO}"><div><div class="eyebrow" style="color:rgba(255,255,255,.75)">${COMPANY}</div><h2>Rapport d'étude solaire</h2><div class="small" style="opacity:.85">${new Date().toLocaleDateString("fr-FR")} · réf. ${esc(S.projet.ref)}</div></div></div>
+    <div class="rh"><div><div class="eyebrow" style="color:rgba(255,255,255,.75)">${esc(emName())}${emLines().length ? " · " + esc(emLines().slice(0, 2).join(" · ")) : ""}</div><h2>Rapport d'étude solaire</h2><div class="small" style="opacity:.85">${new Date().toLocaleDateString("fr-FR")} · réf. ${esc(S.projet.ref)}</div></div></div>
     <div class="rb">
       <h3>Client et projet</h3>${kv("Client", esc(S.projet.client || "à compléter dans Projet"))}${S.projet.tel ? kv("Téléphone", esc(S.projet.tel)) : ""}${kv("Projet", esc(S.projet.nom))}${kv("Site", esc(S.projet.site))}
       <h3>Vos besoins</h3>${kv("Énergie par jour", n1((r.EAC + r.EDC) / 1000) + " kWh")}${kv("Part consommée la nuit", pc(r.PARTNUIT))}${kv("Puissance simultanée", n2(r.PSIM / 1000) + " kW")}
@@ -3849,9 +3893,9 @@ function vRapport() {
       <h3>Rentabilité</h3>${kv("Coût actuel", n0(r.COUTACT) + " " + c + "/an")}${kv("Économie", n0(r.ECOAN) + " " + c + "/an")}${kv("Retour sur investissement", roi)}${kv("CO₂ évité", n1(r.CO2) + " t/an")}
       <h3>Schéma unifilaire</h3><div class="unibox">${unifilaireMobileSVG(r, S)}</div>
       <h3>Points de vigilance</h3><div class="checks">${r.checks.map(([s, t]) => `<div class="chk ${s}">${svgI(s, 16)}<span class="small">${esc(t)}</span></div>`).join("")}</div>
-      <div class="sign"><div>Le client (bon pour accord)</div><div>Pour ${COMPANY}</div></div>
+      <div class="sign"><div>Le client (bon pour accord)</div><div>Pour ${esc(emName())}</div></div>
       ${DEMO ? '<p class="chk ko" style="justify-content:center;font-weight:700;margin-top:14px">VERSION DE DÉMONSTRATION – exemple non contractuel</p>' : ""}
-      <p class="foot">${esc(licLabel())}<br>Étude de pré-dimensionnement ${COMPANY} (méthode Victron Energy). Prix indicatifs valables 30 jours, à confirmer après visite technique.</p>
+      <p class="foot">${esc(emMention("cette étude"))}<br>Étude de pré-dimensionnement réalisée avec le logiciel MUPGLOBAL (méthode Victron Energy). Prix indicatifs valables 30 jours, à confirmer après visite technique.</p>
     </div>
   </div>
   <div class="row noprint">
@@ -4047,7 +4091,7 @@ document.addEventListener("click", (e) => {
             st = defaults();
             st.loads = [];
         }
-        st.projet = { nom, site: st.projet && st.projet.site || "", client: cli, tel: "", ref: "MUP-" + new Date().getFullYear() + "-" + String(Object.keys(store.items).length + 1).padStart(3, "0") };
+        st.projet = { nom, site: st.projet && st.projet.site || "", client: cli, tel: "", ref: "DV-" + new Date().getFullYear() + "-" + String(Object.keys(store.items).length + 1).padStart(3, "0") };
         const id = uid();
         store.items[id] = { st, t: Date.now() };
         store.cur = id;
@@ -4250,7 +4294,7 @@ document.addEventListener("click", (e) => {
         const id = uid(), st = defaults();
         if (d.newp === "vide") {
             st.loads = [];
-            st.projet = { nom: "Nouveau projet", site: "", client: "", tel: "", ref: "MUP-" + new Date().getFullYear() + "-" + String(Object.keys(store.items).length + 1).padStart(3, "0") };
+            st.projet = { nom: "Nouveau projet", site: "", client: "", tel: "", ref: "DV-" + new Date().getFullYear() + "-" + String(Object.keys(store.items).length + 1).padStart(3, "0") };
         }
         store.items[id] = { st, t: Date.now() };
         store.cur = id;
