@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Installer MUPGLOBAL Pompage – Android et iPhone</title>
+<meta name="description" content="Application de pompage solaire MUPGLOBAL SARL : dimensionnement, devis, plan d'affaires et livre de formation – installation sur Android et iPhone.">
+<meta name="theme-color" content="#0B4F7A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MUPGLOBAL Pompage">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--brand:#0B5A2E;--brand-2:#14783f;--gold:#F5B301;--ink:#14231a;--muted:#5b6b60;--line:#dfe6e1;--surface:#fff;--bg:#f3f6f4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e9f1ec;--muted:#a9b9ae;--line:#2a3a30;--surface:#16211b;--bg:#0e1712}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:linear-gradient(160deg,#0B5A2E,#0B4F7A);color:#fff;padding:calc(28px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-left,0px)) 34px;text-align:center}
+html{-webkit-text-size-adjust:100%}
+header img{width:96px;height:96px;border-radius:24px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+header h1{margin:14px 0 4px;font-size:26px;line-height:1.2}
+header p{margin:0;color:#cfe8d8}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+.cta{display:grid;gap:10px;margin:-22px auto 0;max-width:420px}
+.btn{display:block;text-align:center;text-decoration:none;border:0;border-radius:14px;padding:16px;font:700 17px/1.2 system-ui,sans-serif;cursor:pointer}
+.btn.main{background:var(--gold);color:#2b1f00;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.btn.sec{background:var(--surface);color:var(--brand-2);border:2px solid var(--brand-2)}
+.tabs{display:flex;gap:8px;margin:26px 0 12px}
+.tabs button{flex:1;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px;font:700 16px system-ui,sans-serif;cursor:pointer}
+.tabs button[aria-selected="true"]{border-color:var(--brand-2);background:var(--brand-2);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font-size:20px}
+ol{margin:0;padding-left:22px}ol li{margin:8px 0}
+.note{background:#fff4d6;color:#3d2c00;border:1px solid var(--gold);border-radius:12px;padding:12px 14px;font-size:15px}
+.ic{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 6px;border:2px solid var(--brand-2);border-radius:8px;font-weight:800;color:var(--brand-2);vertical-align:middle}
+.qr{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.qr img{width:180px;height:180px;border-radius:12px;background:#fff;padding:6px}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:20px 16px 40px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon-192.png" alt="Logo MUPGLOBAL SARL">
+  <h1>MUPGLOBAL Pompage</h1>
+  <p>Pompage solaire · calcul, devis, rentabilité et livre de formation · Android et iPhone · sans Internet</p>
+</header>
+<div class="wrap">
+  <div class="cta">
+    <button class="btn main" id="inst" hidden>⬇ Installer l'application</button>
+    <a class="btn main" id="open" href="./index.html">Ouvrir l'application</a>
+    <a class="btn sec" href="https://wa.me/243995679353?text=Bonjour%20MUPGLOBAL%20SARL%2C%20je%20souhaite%20une%20licence%20de%20l%27application%20MUPGLOBAL%20POMPAGE%20SOLAIRE." target="_blank" rel="noopener">Demander une licence par WhatsApp</a>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tA" aria-selected="true" onclick="tab('A')">🤖 Android</button>
+    <button role="tab" id="tI" aria-selected="false" onclick="tab('I')">📱 iPhone</button>
+  </div>
+
+  <section id="pA" class="card">
+    <h2>Installer sur Android (Chrome)</h2>
+    <ol>
+      <li>Ouvrez ce lien dans <b>Chrome</b>. Si WhatsApp l'ouvre lui-même : menu <span class="ic">⋮</span> → <b>« Ouvrir dans Chrome »</b>.</li>
+      <li>Touchez <b>« Installer l'application »</b> ci-dessus, ou menu <span class="ic">⋮</span> → <b>« Installer l'application »</b> / <b>« Ajouter à l'écran d'accueil »</b>.</li>
+      <li>Confirmez <b>Installer</b> : l'icône <b>MUPGLOBAL Pompage</b> apparaît sur l'écran d'accueil.</li>
+      <li>Ouvrez l'icône, copiez le <b>code de l'appareil</b> et envoyez-le à MUPGLOBAL SARL pour recevoir votre clé.</li>
+    </ol>
+    <p class="note">Pas d'icône ? Paramètres du téléphone → Applications → Chrome → Autorisations → activez <b>« Raccourcis sur l'écran d'accueil »</b>, puis recommencez. Regardez aussi dans la liste de toutes les applications.</p>
+  </section>
+
+  <section id="pI" class="card" hidden>
+    <h2>Installer sur iPhone / iPad (Safari)</h2>
+    <p style="margin:0 0 8px">Ouvrez ce lien dans <b>Safari</b> (pas dans WhatsApp, pas en navigation privée), puis suivez les étapes de <b>votre version d'iPhone</b> (Réglages → Général → Informations → Version d'iOS).</p>
+    <h3 style="margin:12px 0 4px;font-size:17px">iOS 26 (nouvelle présentation de Safari)</h3>
+    <ol>
+      <li>Touchez le bouton <span class="ic">⋯</span> (trois points) à droite de la barre d'adresse, en bas de l'écran.</li>
+      <li>Touchez <b>Partager</b> <span class="ic">⇧</span>.</li>
+      <li>Faites défiler et touchez <b>« Sur l'écran d'accueil »</b>.</li>
+      <li>Laissez <b>activé</b> l'interrupteur <b>« Ouvrir en tant qu'app web »</b>, puis touchez <b>Ajouter</b> en haut à droite.</li>
+    </ol>
+    <h3 style="margin:14px 0 4px;font-size:17px">iOS 18 et plus ancien</h3>
+    <ol>
+      <li>Touchez <b>Partager</b> <span class="ic">⇧</span> en bas de l'écran (en haut sur iPad).</li>
+      <li>Touchez <b>« Sur l'écran d'accueil »</b> (si absent : « Modifier les actions » en bas de la liste), puis <b>Ajouter</b>.</li>
+    </ol>
+    <p class="note"><b>Ensuite :</b> ouvrez l'application <b>depuis l'icône MUPGLOBAL Pompage</b> et demandez votre clé <b>depuis l'icône</b> (sur iPhone, l'icône a son propre code d'appareil).<br>Pas de « Sur l'écran d'accueil » ? Vous êtes peut-être dans WhatsApp ou en navigation privée : copiez le lien et ouvrez-le dans Safari.</p>
+  </section>
+
+  <section class="card" id="pc">
+    <h2>Sur ordinateur ?</h2>
+    <div class="qr"><img src="qr-installer.png" alt="QR code vers la page d'installation"><div>Scannez ce code avec l'appareil photo du téléphone pour ouvrir cette page, puis suivez les étapes Android ou iPhone.<br><br><b>Lien :</b> mupglobalsarl.github.io/pv/pompage/installer.html</div></div>
+  </section>
+
+  <section class="card">
+    <h2>Bon à savoir</h2>
+    <ol>
+      <li>Une licence = un téléphone. Demandez votre clé avec le code affiché dans l'application.</li>
+      <li>Après l'activation, l'application fonctionne <b>sans Internet</b> et se met à jour toute seule quand le téléphone est connecté.</li>
+      <li>Ne videz pas les données du navigateur : la clé et vos projets y sont enregistrés. Sauvegardez vos projets avec le bouton ⤓.</li>
+    </ol>
+  </section>
+</div>
+<footer>MUPGLOBAL SARL · Lubumbashi, RD Congo · WhatsApp +243 995 679 353 · dieumercimupole9@gmail.com</footer>
+<script>
+var ua = navigator.userAgent, ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1), android = /Android/i.test(ua);
+function tab(k){ document.getElementById("pA").hidden = k !== "A"; document.getElementById("pI").hidden = k !== "I"; document.getElementById("tA").setAttribute("aria-selected", k === "A"); document.getElementById("tI").setAttribute("aria-selected", k === "I"); }
+if (ios) tab("I");
+if (ios || android) document.getElementById("pc").hidden = true;
+var evt = null;
+window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); evt = e; document.getElementById("inst").hidden = false; });
+document.getElementById("inst").addEventListener("click", function () { if (!evt) return; evt.prompt(); evt.userChoice.then(function () { evt = null; document.getElementById("inst").hidden = true; }); });
+window.addEventListener("appinstalled", function () { document.getElementById("inst").hidden = true; });
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(function () {});
+</script>
+</body>
+</html>
