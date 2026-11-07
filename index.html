@@ -1674,21 +1674,44 @@ function unifilaireMobileSVG(R, S) {
     const xA = 352;
     let yA = 20;
     if (hyb || grp) {
-        s += t(xA, yA, hyb ? "Réseau de distribution" : "Groupe électrogène", { fs: 8, b: 1 });
+        let xo = xA;
         if (hyb) {
+            s += t(xA, yA, "Réseau de distribution", { fs: 8, b: 1 });
             s += L(xA, yA + 4, xA, yA + 8) + fuse(xA, yA + 8) + L(xA, yA + 26, xA, yA + 30) + meter(xA, yA + 30) + L(xA, yA + 46, xA, yA + 50) + t(xA + 14, yA + 42, "compteur", { a: "start", fs: 7.5, fill: MU });
             s += ddr(xA, yA + 50) + t(xA + 14, yA + 70, "AGCP", { a: "start", fs: 8, b: 1 }) + t(xA + 14, yA + 79, `${R.DJACIN} A`, { a: "start", fs: 7.5, fill: MU });
+            s += L(xA - 22, yA + 86, W - 6, yA + 86, MU, 0.9, "6 4") + t(W - 8, yA + 95, "NF C 14-100 ↑", { a: "end", fs: 6.5, fill: MU }) + t(W - 8, yA + 104, "NF C 15-100 ↓", { a: "end", fs: 6.5, fill: MU });
             yA += 80;
+            if (grp) {
+                // groupe électrogène + inverseur de source I-0-II
+                const xG = xInv + 34, iy = yA + 30;
+                s += circ(xG, 26, "G~", IN) + t(xG, 22, `${R.GKVA} kVA`, { fs: 7, fill: IN }) + L(xG, 50, xG, 56, IN) + brk(xG, 56, IN) + t(xG - 6, 96, "disj. groupe", { a: "end", fs: 6.5, fill: IN }) + L(xG, 86, xG, iy + 6, IN, 1.3);
+                s += L(xA, yA, xA, iy + 6, IN, 1.3);
+                xo = Math.round((xG + xA) / 2);
+                s += `<rect x="${xG - 10}" y="${iy - 4}" width="${xA - xG + 20}" height="38" rx="3" fill="${BG}" stroke="${IN}" stroke-width="1.2" stroke-dasharray="4 2"/>`;
+                s += `<circle cx="${xG}" cy="${iy + 8}" r="2.4" fill="${BG}" stroke="${IN}" stroke-width="1.2"/><circle cx="${xA}" cy="${iy + 8}" r="2.4" fill="${BG}" stroke="${IN}" stroke-width="1.2"/><circle cx="${xo}" cy="${iy + 27}" r="2.4" fill="${IN}"/>`;
+                s += L(xo, iy + 27, xA - 3, iy + 10, IN, 1.6) + t(xA + 4, iy + 4, "I", { a: "start", fs: 7, b: 1, fill: IN }) + t(xG - 4, iy + 4, "II", { a: "end", fs: 7, b: 1, fill: IN }) + t(xo, iy + 12, "0", { fs: 7, b: 1, fill: IN });
+                s += t(xo, iy + 45, "Inverseur de source", { fs: 7.5, b: 1, fill: IN }) + t(xo, iy + 54, "I réseau · 0 · II groupe", { fs: 6.5, fill: IN });
+                s += L(xo, iy + 29, xo, iy + 58, IN, 1.4);
+                yA = iy + 58;
+            }
         }
         else {
-            s += circ(xA, yA + 6, "G~", IN) + t(xA + 16, yA + 22, `${R.GKVA} kVA`, { a: "start", fs: 7.5, fill: IN }) + L(xA, yA + 30, xA, yA + 36, IN) + brk(xA, yA + 36, IN) + t(xA + 14, yA + 56, `${R.DJACIN} A`, { a: "start", fs: 7.5, fill: IN });
+            s += t(xA, yA, "Groupe électrogène", { fs: 8, b: 1 });
+            s += circ(xA, yA + 6, "G~", IN) + t(xA + 16, yA + 22, `${R.GKVA} kVA`, { a: "start", fs: 7.5, fill: IN }) + L(xA, yA + 30, xA, yA + 36, IN) + brk(xA, yA + 36, IN) + t(xA + 14, yA + 56, "disj. groupe", { a: "start", fs: 7, fill: IN });
             yA += 66;
         }
-        if (hyb && grp)
-            s += circ(xInv + 22, yA - 40, "G~", IN) + t(xInv + 22, yA - 44, `${R.GKVA} kVA`, { fs: 7, fill: IN }) + L(xInv + 22, yA - 16, xInv + 22, yA + 30, IN, 1.3) + `<circle cx="${xInv + 22}" cy="${yA + 30}" r="2.2" fill="${IN}"/>` + t(xInv + 28, yA + 24, "inverseur", { a: "start", fs: 7, fill: IN });
-        s += L(xInv + 32, yA + 12, W - 6, yA + 12, MU, 0.9, "6 4") + t(W - 8, yA + 9, "NF C 14-100", { a: "end", fs: 7, fill: MU }) + t(W - 8, yA + 21, "NF C 15-100", { a: "end", fs: 7, fill: MU });
+        // coffret AC d'entrée onduleur : disjoncteur + parafoudre AC (côté réseau / groupe)
+        if (hyb && !grp)
+            yA += 22;
+        const xc = Math.min(xo, 330), yc = yA + 18, xsp = xc + 32;
+        s += PL([[xo, yA], [xo, yA + 4], [xc, yA + 4], [xc, yc + 4]], IN, 1.4);
+        s += `<rect x="${xc - 26}" y="${yc - 12}" width="${W - 4 - (xc - 26)}" height="78" rx="3" fill="none" stroke="${IN}" stroke-width="1"/>` + t(xc - 22, yc - 3, "Coffret AC entrée onduleur", { a: "start", fs: 7, b: 1, fill: IN });
+        s += brk(xc, yc + 4, IN) + t(xc - 12, yc + 26, `${R.DJACIN} A`, { a: "end", fs: 7.5, b: 1, fill: IN });
+        s += PL([[xc, yc + 37], [xsp, yc + 37], [xsp, yc + 40]], IN, 1.1) + spd(xsp, yc + 40) + L(xsp, yc + 60, xsp, yc + 63, GN, 1) + gnd(xsp, yc + 63);
+        s += t(xsp + 10, yc + 47, "Parafoudre", { a: "start", fs: 6.8, fill: IN }) + t(xsp + 10, yc + 56, `AC ${R.SPDDC12 ? "T1+T2" : "T2"}`, { a: "start", fs: 6.8, fill: IN });
         // vers l'entrée AC de l'onduleur
-        s += PL([[xA, yA], [xA, yA + 30], [xInv + 16, yA + 30], [xInv + 16, yInv - 6]], IN, 1.5) + t(xInv + 20, yA + 42, "entrée AC onduleur", { a: "start", fs: 7.5, fill: IN });
+        s += PL([[xc, yc + 34], [xc, yc + 80], [xInv + 16, yc + 80], [xInv + 16, yInv - 6]], IN, 1.5) + t(xInv + 20, yc + 90, "entrée AC onduleur", { a: "start", fs: 7.5, fill: IN });
+        yA = yc + 64;
     }
     // sortie AC de l'onduleur -> coffret AC
     const yCA = Math.max(yInv + 40, yA + 52);
