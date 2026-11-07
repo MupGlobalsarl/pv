@@ -1557,7 +1557,16 @@ function unifilaireMobileSVG(R, S) {
     const circ = (x, y, lbl, col) => `<circle cx="${x}" cy="${y + 12}" r="12" fill="${BG}" stroke="${col}" stroke-width="1.4"/>` + t(x, y + 16, lbl, { fs: 9.5, b: 1, fill: col });
     const lamp = (x, y) => `<circle cx="${x}" cy="${y + 8}" r="7.5" fill="${BG}" stroke="${AC}" stroke-width="1.3"/><path d="M${x - 5.3} ${y + 2.7} l10.6 10.6 m0 -10.6 l-10.6 10.6" stroke="${AC}" stroke-width="1"/>`;
     const sock = (x, y) => `<path d="M${x - 8} ${y + 5} a8 8 0 0 0 16 0" fill="none" stroke="${AC}" stroke-width="1.3"/>` + L(x - 10, y + 5, x + 10, y + 5, AC, 1.1) + L(x, y, x, y + 5, AC, 1.1);
-    const mot = (x, y) => `<circle cx="${x}" cy="${y + 8}" r="8" fill="${BG}" stroke="${AC}" stroke-width="1.3"/>` + t(x, y + 11.5, "M", { fs: 8.5, b: 1, fill: AC });
+    const mot = (x, y) => `<circle cx="${x}" cy="${y + 9}" r="9" fill="${BG}" stroke="${AC}" stroke-width="1.3"/>` + t(x, y + 10, "M", { fs: 8, b: 1, fill: AC }) + `<path d="M${x - 3} ${y + 14} q1.5 -2 3 0 t3 0" fill="none" stroke="${AC}" stroke-width="0.9"/>`; // moteur alternatif M~ (CEI 60617)
+    // récepteurs : symboles d'installation (CEI 60617-11 / NF C 15-100)
+    const sockT = (x, y) => L(x, y, x, y + 5, AC, 1.1) + L(x - 10, y + 5, x + 10, y + 5, AC, 1.1) + `<path d="M${x - 8} ${y + 5} a8 8 0 0 0 16 0" fill="none" stroke="${AC}" stroke-width="1.3"/>` + L(x - 7, y + 15.5, x + 7, y + 15.5, AC, 1.3); // prise 2P+T
+    const sockS = (x, y) => sockT(x, y) + t(x + 12, y + 4, "S", { a: "start", fs: 6.5, b: 1, fill: AC }); // prise de circuit spécialisé
+    const boxS = (x, y, inner) => `<rect x="${x - 10}" y="${y}" width="20" height="18" fill="${BG}" stroke="${AC}" stroke-width="1.3"/>` + inner;
+    const frig = (x, y, n) => boxS(x, y, t(x, y + 14, n === 3 ? "✱✱✱" : "✱", { fs: n === 3 ? 6 : 9, b: 1, fill: AC })); // réfrigérateur ✱, congélateur ✱✱✱
+    const heat = (x, y) => boxS(x, y, `<path d="M${x - 6} ${y + 9} l2 -4 l2.5 8 l2.5 -8 l2.5 8 l2.5 -8 l2 4" fill="none" stroke="${AC}" stroke-width="1"/>`); // chauffe-eau / chauffage (résistance)
+    const cook = (x, y) => boxS(x, y, `<circle cx="${x - 4.5}" cy="${y + 6}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x + 4.5}" cy="${y + 6}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x - 4.5}" cy="${y + 13}" r="2.6" fill="none" stroke="${AC}"/><circle cx="${x + 4.5}" cy="${y + 13}" r="2.6" fill="none" stroke="${AC}"/>`); // appareil de cuisson
+    const wash = (x, y) => boxS(x, y, `<circle cx="${x}" cy="${y + 9}" r="5.5" fill="none" stroke="${AC}" stroke-width="1.1"/>`); // lave-linge
+    const clim = (x, y) => boxS(x, y, `<path d="M${x} ${y + 3} v12 M${x - 5.2} ${y + 6} l10.4 6 M${x - 5.2} ${y + 12} l10.4 -6" stroke="${AC}" stroke-width="1.1"/>`) + t(x + 12, y + 4, "M", { a: "start", fs: 6, b: 1, fill: AC }); // climatiseur (froid, compresseur)
     const tri = S.phases === "Triphasé", hyb = S.mode === "Hybride", grp = S.groupe === "Oui";
     const sh = (m) => String(m || "").replace("MultiPlus-II ", "MP-II ").replace("-EU", "").replace("SmartSolar ", "");
     const c0 = R.cables && R.cables[0] || {}, c1 = R.cables && R.cables[1] || {}, c2 = R.cables && R.cables[2] || {}, c3 = R.cables && R.cables[3] || {};
@@ -1780,6 +1789,28 @@ function unifilaireMobileSVG(R, S) {
         c.P += P;
     });
     const ordre = { lum: 0, pc: 1, froid: 2, mot: 3, spe: 4, clim: 5 };
+    const SYM = { lamp: [lamp, "Point lumineux"], sock: [sockT, "Prise 2P+T"], sockS: [sockS, "Prise spécialisée"], frig: [(x, y) => frig(x, y, 1), "Réfrigérateur"], cong: [(x, y) => frig(x, y, 3), "Congélateur"],
+        heat: [heat, "Chauffe-eau / chauffage"], cook: [cook, "Cuisson"], wash: [wash, "Lave-linge"], clim: [clim, "Climatiseur"], mot: [mot, "Moteur, pompe M~"] };
+    const used = new Set();
+    const symOf = (c) => {
+        const big = c.it.slice().sort((a, b) => pw(b) - pw(a))[0] || {}, nm = `${big.nom || ""} ${big.cat || ""}`;
+        if (c.k === "lum")
+            return "lamp";
+        if (c.k === "clim")
+            return "clim";
+        if (c.k === "mot")
+            return "mot";
+        const one = c.ded || c.it.length === 1, allN = c.it.map((l) => `${l.nom} ${l.cat}`).join(" ");
+        if (one && /chauffe|ballon|cumulus|radiateur|chauffage|bouilloire/i.test(nm))
+            return "heat";
+        if (one && /cuisini|plaque|four\b|four |réchaud|rechaud|micro-onde|cuisson/i.test(nm))
+            return "cook";
+        if (one && /lave-linge|machine à laver|machine a laver|lave linge|lave-vaisselle/i.test(nm))
+            return "wash";
+        if (c.k === "froid")
+            return /congél|congel|chambre froide/i.test(allN) ? "cong" : /réfrig|refrig|frigo/i.test(allN) ? "frig" : "sockS";
+        return c.k === "spe" ? "sockS" : "sock";
+    };
     cir.sort((a, b) => ordre[a.k] - ordre[b.k]);
     const MAXC = 8;
     while (cir.length > MAXC) { // regroupe les deux plus petits circuits de prises / froid
@@ -1825,8 +1856,11 @@ function unifilaireMobileSVG(R, S) {
             if (tri)
                 s += t(x + 4, yy + 29, ph[i % 3], { a: "start", fs: 6.3, fill: AC });
             yy += 30;
-            const f = c.k === "lum" ? lamp : c.k === "pc" || c.k === "spe" ? sock : mot;
-            s += L(x, yy, x, yy + 4, AC, 1.1) + f(x, yy + 4);
+            const sym = symOf(c);
+            used.add(sym);
+            if (c.nom === "Spécialisé" && { heat: 1, cook: 1, wash: 1 }[sym])
+                c.nom = { heat: "Chauffe-eau", cook: "Cuisson", wash: "Lave-linge" }[sym];
+            s += L(x, yy, x, yy + 4, AC, 1.1) + SYM[sym][0](x, yy + 4);
             yy += 32;
             const mx = Math.max(6, Math.floor(cw / 3.25));
             const cut = (z) => (z.length > mx ? z.slice(0, mx - 1) + "…" : z);
@@ -1843,7 +1877,14 @@ function unifilaireMobileSVG(R, S) {
             if (i < n - 1)
                 s += L(x + cw / 2, yR + 22, x + cw / 2, ye, MU, 0.4, "1 3");
         });
-        let yn = yMax + 14;
+        let yn = yMax + 12;
+        // légende des symboles utilisés
+        const us = [...used];
+        const lw = (W - 16) / 3;
+        s += t(8, yn, "Symboles (CEI 60617 / NF C 15-100) :", { a: "start", fs: 6.8, b: 1 });
+        yn += 6;
+        us.forEach((k, i) => { const xl = 8 + (i % 3) * lw, yl = yn + Math.floor(i / 3) * 28; s += SYM[k][0](xl + 12, yl) + t(xl + 26, yl + 13, SYM[k][1], { a: "start", fs: 6.5 }); });
+        yn += Math.ceil(us.length / 3) * 28 + 8;
         s += t(W / 2, yn, `${n} circuit(s) · ${acl.length} appareil(s) AC · ${fmtN(acl.reduce((a, l) => a + pw(l), 0) / 1000, 2)} kW installés`, { fs: 7.5, fill: MU });
         if (dcl.length) {
             yn += 11;
