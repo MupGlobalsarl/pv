@@ -251,6 +251,7 @@ th { color: var(--muted); font-weight: 600; font-size: 12px }
 .simctl input[type=range] { width: 100%; accent-color: var(--brand-2); min-height: 32px }
 #simsvg { width: 100%; min-width: 620px; height: auto; display: block }
 .chip[aria-pressed="true"] { background: var(--ko-bg); color: var(--ko); border-color: var(--ko) }
+.chip.locf[aria-pressed="true"] { background: var(--brand-2); color: #fff; border-color: var(--brand-2) }
 .stage { position: relative; aspect-ratio: 16 / 9; width: 100%; border-radius: 14px; overflow: hidden; background: radial-gradient(120% 120% at 10% 0%, #146B3A 0%, #0B3B22 55%, #08271A 100%); color: #F2F7F3; outline: none }
 .stage:focus-visible { outline: 3px solid var(--gold) }
 .slide { position: absolute; inset: 0; padding: clamp(14px, 4%, 40px); display: none; overflow: hidden }
@@ -743,7 +744,7 @@ function defaults() {
             ["Climatiseur salon (18 000 BTU)", "Climatisation", 1, 1700, 4, 2, 3], ["Climatiseur chambre parents (12 000 BTU)", "Climatisation", 1, 1100, 0, 8, 3],
             ["Climatiseur chambre enfant (9 000 BTU)", "Climatisation", 1, 850, 0, 8, 3], ["PC", "Informatique", 1, 100, 5, 1, 1.5],
             ["Éclairage intérieur (LED 10 W)", "Éclairage", 15, 10, 0, 6, 1], ["Éclairage extérieur (LED 20 W)", "Éclairage", 5, 20, 0, 12, 1],
-        ].map(([nom, cat, q, p, hj, hn, k]) => ({ nom, cat, type: "AC", q, p, hj, hn, k, on: true })),
+        ].map(([nom, cat, q, p, hj, hn, k]) => ({ nom, cat, type: "AC", q, p, hj, hn, k, on: true, loc: /salon/i.test(nom) ? "Salon" : /parents/i.test(nom) ? "Chambre parents" : /enfant/i.test(nom) ? "Chambre enfant" : /congél|fontaine/i.test(nom) ? "Cuisine" : /^PC/.test(nom) ? "Bureau" : /extérieur/i.test(nom) ? "Extérieur" : "Toute la maison" })),
     };
 }
 const ru = (x) => Math.ceil(x - 1e-9), rd = (x) => Math.floor(x + 1e-9);
@@ -2933,7 +2934,7 @@ async function importExcelProject(file) {
         const fu = Math.min(1, Math.max(0, B["AE" + r] === undefined || B["AE" + r] === "" ? 1 : +B["AE" + r] || 1));
         const on = B["P" + r] !== "Non" && !(essentiel && B["AC" + r] === "Non prioritaire");
         st.loads.push({ nom: String(nom), cat: String(B["C" + r] || "Autre"), type: B["E" + r] === "DC" ? "DC" : "AC", q: +B["F" + r] || 1, p: +B["G" + r] || 0,
-            hj: Math.round((+B["I" + r] || 0) * fu * 100) / 100, hn: Math.round((+B["J" + r] || 0) * fu * 100) / 100, k: +B["O" + r] || 1, on });
+            hj: Math.round((+B["I" + r] || 0) * fu * 100) / 100, hn: Math.round((+B["J" + r] || 0) * fu * 100) / 100, k: +B["O" + r] || 1, on, loc: B["D" + r] ? String(B["D" + r]).trim() : "" });
     }
     if (!st.loads.length)
         throw new Error("Aucun appareil trouvé dans le Bilan de charges.");
@@ -3751,12 +3752,26 @@ const PRESETS = [
     ["Pompe à eau 0,75 kW", "Froid & eau", 750, 1, 0, 3], ["Fer à repasser", "Autre", 1200, 0.5, 0, 1], ["Micro-ondes", "Autre", 1200, 0.3, 0, 1.5],
     ["Machine à laver", "Autre", 500, 1, 0, 3], ["Chargeurs de téléphones", "Autre", 10, 2, 4, 1], ["Caméra de surveillance", "Autre", 10, 11, 13, 1]
 ];
+const LOCS = ["Salon", "Salle à manger", "Cuisine", "Chambre parents", "Chambre enfant", "Chambre 1", "Chambre 2", "Chambre 3", "Salle de bain", "Toilettes", "Bureau", "Couloir", "Buanderie", "Garage", "Magasin", "Véranda", "Extérieur", "Guérite", "Toute la maison"];
+let LOCF = "";
+function locStats() {
+    const m = new Map();
+    S.loads.forEach((l, i) => { if (l.on === false)
+        return; const k = (l.loc || "").trim() || "Non précisé", r = R.loads[i], o = m.get(k) || { n: 0, p: 0, e: 0 }; o.n += +l.q || 1; o.p += (+l.q || 0) * (+l.p || 0); o.e += r.E; m.set(k, o); });
+    return [...m.entries()].sort((a, b) => b[1].e - a[1].e);
+}
 function vApp() {
     const t = R.loads.reduce((a, l) => a + l.E, 0);
+    const ls = locStats(), used = [...new Set(S.loads.map((l) => (l.loc || "").trim() || "Non précisé"))];
+    if (LOCF && !used.includes(LOCF))
+        LOCF = "";
     return `
   <div class="totals"><div><div class="v">${n0(R.PAC)} W</div><div class="l">Puissance retenue</div></div><div><div class="v">${n1(t / 1000)} kWh</div><div class="l">par jour</div></div><div><div class="v">${pc(R.PARTNUIT)}</div><div class="l">la nuit</div></div></div>
+  <details class="card"><summary>Consommation par local<span class="sv">${ls.length} ${ls.length > 1 ? "locaux" : "local"}</span></summary><div class="dbody"><div class="tbl"><table><tr><th>Local</th><th>Appareils</th><th>Puissance</th><th>Wh/j</th><th>Part</th></tr>${ls.map(([k, o]) => `<tr><td>${esc(k)}</td><td>${n0(o.n)}</td><td>${n0(o.p)} W</td><td>${n0(o.e)}</td><td>${pc(t ? o.e / t : 0)}</td></tr>`).join("")}</table></div></div></details>
   <div class="h-sec"><h2>${S.loads.length} appareil${S.loads.length > 1 ? "s" : ""}</h2><span class="small muted">Touchez pour modifier</span></div>
-  <div class="loads">${S.loads.map((l, i) => { const r = R.loads[i]; return `<button type="button" class="load ${l.on === false ? "off" : ""}" data-edit="${i}"><span class="ic">${catIcon(l.cat)}</span><span style="min-width:0"><span class="nm">${l.q > 1 ? l.q + " × " : ""}${esc(l.nom)}</span><span class="sub" style="display:block">${n0(l.p)} W · jour ${n1(+l.hj || 0)} h · nuit ${n1(+l.hn || 0)} h${l.on === false ? " · exclu" : ""}</span></span><span class="en">${n0(r.E)}<small>Wh/j</small></span></button>`; }).join("")}</div>
+  ${used.length > 1 ? `<div class="chips" role="group" aria-label="Filtrer par local"><button type="button" class="chip locf" data-locf="" aria-pressed="${!LOCF}">Tous</button>${used.map((k) => `<button type="button" class="chip locf" data-locf="${esc(k)}" aria-pressed="${LOCF === k}">${esc(k)}</button>`).join("")}</div>` : ""}
+  <div class="loads">${S.loads.map((l, i) => { if (LOCF && ((l.loc || "").trim() || "Non précisé") !== LOCF)
+        return ""; const r = R.loads[i]; return `<button type="button" class="load ${l.on === false ? "off" : ""}" data-edit="${i}"><span class="ic">${catIcon(l.cat)}</span><span style="min-width:0"><span class="nm">${l.q > 1 ? l.q + " × " : ""}${esc(l.nom)}</span><span class="sub" style="display:block">${l.loc ? `<b>${esc(l.loc)}</b> · ` : ""}${n0(l.p)} W · jour ${n1(+l.hj || 0)} h · nuit ${n1(+l.hn || 0)} h${l.on === false ? " · exclu" : ""}</span></span><span class="en">${n0(r.E)}<small>Wh/j</small></span></button>`; }).join("")}</div>
   <div class="h-sec"><h2>Ajouter un appareil</h2></div>
   <div class="chips" role="list">${PRESETS.map((p, i) => `<button type="button" class="chip" data-preset="${i}" role="listitem">+ ${esc(p[0])}</button>`).join("")}</div>
   <button type="button" class="btn ghost wide" data-new>Autre appareil (saisie libre)</button>
@@ -3765,10 +3780,13 @@ function vApp() {
 function editLoad(i, preset) {
     const isNew = i === null;
     const l = isNew ? (preset ? { nom: preset[0], cat: preset[1], type: "AC", q: 1, p: preset[2], hj: preset[3], hn: preset[4], k: preset[5], on: true } : { nom: "", cat: "Autre", type: "AC", q: 1, p: 100, hj: 2, hn: 2, k: 1, on: true }) : Object.assign({}, S.loads[i]);
+    if (isNew && LOCF && LOCF !== "Non précisé")
+        l.loc = LOCF;
     const cats = Object.keys(CATIC);
     openSheet(`<div class="ph"><h2>${isNew ? "Nouvel appareil" : "Modifier l'appareil"}</h2><button class="x" type="button" data-close aria-label="Fermer">×</button></div>
   <form class="form" id="lf">
     <div class="f"><label for="l-nom">Nom</label><input id="l-nom" name="nom" required value="${esc(l.nom)}" placeholder="ex. Réfrigérateur cuisine"></div>
+    <div class="f"><label for="l-loc">Local (pièce)</label><input id="l-loc" name="loc" list="l-locs" value="${esc(l.loc || "")}" placeholder="ex. Salon, Chambre 1, Cuisine, Extérieur" autocomplete="off"><datalist id="l-locs">${[...new Set([...S.loads.map((x) => x.loc).filter(Boolean), ...LOCS])].map((x) => `<option value="${esc(x)}"></option>`).join("")}</datalist><span class="hint">Choisissez dans la liste ou saisissez un autre local.</span></div>
     <div class="g2"><div class="f"><label for="l-cat">Catégorie</label><select id="l-cat" name="cat">${cats.map((c) => `<option ${c === l.cat ? "selected" : ""}>${c}</option>`).join("")}</select></div>
     <div class="f"><label for="l-type">Alimentation</label><select id="l-type" name="type"><option ${l.type === "AC" ? "selected" : ""}>AC</option><option ${l.type === "DC" ? "selected" : ""}>DC</option></select></div></div>
     <div class="g2"><div class="f"><label for="l-q">Quantité</label><input id="l-q" name="q" type="number" inputmode="numeric" min="1" step="1" value="${l.q}"></div>
@@ -3784,7 +3802,7 @@ function editLoad(i, preset) {
     f.addEventListener("submit", (e) => {
         e.preventDefault();
         const d = new FormData(f);
-        const o = { nom: d.get("nom").trim() || "Appareil", cat: d.get("cat"), type: d.get("type"), q: Math.max(1, Math.round(+d.get("q") || 1)), p: Math.max(0, +d.get("p") || 0), hj: Math.min(S.hjour, Math.max(0, +d.get("hj") || 0)), hn: Math.min(24 - S.hjour, Math.max(0, +d.get("hn") || 0)), k: Math.max(1, +d.get("k") || 1), on: f.querySelector("#l-on").checked };
+        const o = { nom: d.get("nom").trim() || "Appareil", cat: d.get("cat"), type: d.get("type"), q: Math.max(1, Math.round(+d.get("q") || 1)), p: Math.max(0, +d.get("p") || 0), hj: Math.min(S.hjour, Math.max(0, +d.get("hj") || 0)), hn: Math.min(24 - S.hjour, Math.max(0, +d.get("hn") || 0)), k: Math.max(1, +d.get("k") || 1), on: f.querySelector("#l-on").checked, loc: String(d.get("loc") || "").trim().slice(0, 40) };
         if (isNew)
             S.loads.push(o);
         else
@@ -4177,6 +4195,11 @@ document.addEventListener("click", (e) => {
     if ("reset" in d) {
         delete S.prix[d.reset];
         commit();
+        return;
+    }
+    if ("locf" in d) {
+        LOCF = d.locf;
+        render();
         return;
     }
     if ("example" in d) {
