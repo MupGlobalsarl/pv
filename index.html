@@ -339,7 +339,7 @@ th { color: var(--muted); font-weight: 600; font-size: 12px }
 .dz-kpis span { font-size: 11.5px; color: #9FB4CC } .dz-kpis b { font: 800 17px/1.2 var(--display); color: #fff; overflow-wrap: anywhere }
 .dz-kpis div:first-child b { color: #F5C542 }
 @media (prefers-reduced-motion: reduce) { .dz-flow { animation: none; stroke-dasharray: none } .dz-status i { animation: none } .dz-arc { transition: none } }
-.dz-flow.res { stroke: #9AA9BA } .dz-flow.cons { stroke: #F0883E; filter: drop-shadow(0 0 3px rgba(240,136,62,.8)) } .dz-flow.batc { stroke: #38C172; filter: drop-shadow(0 0 3px rgba(56,193,114,.8)) }
+.dz-flow.res { stroke: #9AA9BA } .dz-flow.gen { stroke: #E67E22; filter: drop-shadow(0 0 3px rgba(230,126,34,.8)) } .dz-flow.cons { stroke: #F0883E; filter: drop-shadow(0 0 3px rgba(240,136,62,.8)) } .dz-flow.batc { stroke: #38C172; filter: drop-shadow(0 0 3px rgba(56,193,114,.8)) }
 .dz-flow.rev { animation-direction: reverse }
 .dz-sky { position: relative } .dz-clock { position: absolute; right: 6px; top: 0; font: 800 15px var(--display); color: #F5C542 }
 #pz-lvl { transition: y .4s, fill .4s } #pz-sunc { filter: drop-shadow(0 0 6px #F5B301); transition: opacity .4s }
@@ -3550,6 +3550,7 @@ const PIC = {
     bat: '<rect x="3" y="7" width="16" height="11" rx="2"/><path d="M21 11v3M7 12.5h3M8.5 11v3M13 12.5h3"/>',
     load: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M12 13v3"/>',
     grid: '<path d="M12 2 7 22M12 2l5 20M8.5 9h7M7.5 14h9M4 6h16"/>',
+    gen: '<rect x="3" y="7" width="18" height="12" rx="2"/><path d="M7 7V4h6v3M13 10l-3 4h4l-3 4"/><circle cx="17.5" cy="11" r="1.2"/>',
 };
 const pico = (k, c) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PIC[k]}</svg>`;
 const pw = (w) => (Math.abs(w) >= 1000 ? n2(w / 1000) + " kW" : n0(w) + " W");
@@ -3558,18 +3559,19 @@ function pring(v, max, col, label, txt, sub) {
     return `<div class="dz-gauge"><svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="${r}" fill="none" stroke="#24405F" stroke-width="7"/><circle class="dz-arc" cx="40" cy="40" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${c.toFixed(1)}" data-off="${(c * (1 - f)).toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="45" text-anchor="middle" font-size="16" font-weight="800" fill="#E6EEF7" font-family="var(--display)">${txt}</text></svg><div class="dz-gl">${label}</div><div class="dz-gs">${sub}</div></div>`;
 }
 function pvDash() {
-    const r = R, hyb = S.mode === "Hybride", gen = S.groupe === "Oui", src = hyb || gen;
+    const r = R, hyb = S.mode === "Hybride", gen = S.groupe === "Oui", src = hyb || gen, both = hyb && gen;
     const ko = r.checks.filter((c) => c[0] === "ko").length;
-    const node = (x, y, id, icon, col, title, sub) => `<g transform="translate(${x},${y})"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/><g transform="translate(10,10)">${pico(icon, col)}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">${title}</text><text id="${id}" x="12" y="52" font-size="19" fill="#FFFFFF" font-weight="800" font-family="var(--display)">0 W</text><text id="${id}s" x="12" y="66" font-size="10.5" fill="#9FB4CC">${sub}</text></g>`;
+    const node = (x, y, id, icon, col, title, sub, w = 150) => `<g transform="translate(${x},${y})"><rect width="${w}" height="74" rx="12" fill="#16283F" stroke="#24405F"/><g transform="translate(10,10)">${pico(icon, col)}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">${title}</text><text id="${id}" x="12" y="52" font-size="19" fill="#FFFFFF" font-weight="800" font-family="var(--display)">0 W</text><text id="${id}s" x="12" y="66" font-size="10.5" fill="#9FB4CC">${sub}</text></g>`;
     const flow = (d, cls, id) => `<path d="${d}" class="dz-line"/><path id="${id}" d="${d}" class="dz-flow ${cls}"/>`;
     const svg = `<svg class="dz-svg" viewBox="0 0 360 318" role="img" aria-label="Flux d'énergie de l'installation au cours de la journée">
     <defs><clipPath id="pzclip"><rect width="150" height="74" rx="12"/></clipPath></defs>
-    ${flow("M95 94 V120 Q95 128 105 128 H120", "sol", "pzf1")}
-    ${src ? flow("M265 94 V120 Q265 128 255 128 H240", "res", "pzf2") : ""}
+    ${both ? flow("M64 94 V114 Q64 120 70 120 H130 Q136 120 136 126 V128", "sol", "pzf1") + flow("M180 94 V128", "res", "pzf2") + flow("M296 94 V114 Q296 120 290 120 H230 Q224 120 224 126 V128", "gen", "pzf5")
+        : flow("M95 94 V120 Q95 128 105 128 H120", "sol", "pzf1") + (src ? flow("M265 94 V120 Q265 128 255 128 H240", gen ? "gen" : "res", gen ? "pzf5" : "pzf2") : "")}
     ${flow("M230 202 V236", "cons", "pzf3")}
     ${flow("M130 202 V236", "batc", "pzf4")}
-    ${node(20, 20, "pz-pv", "pv", "#F5B301", "Champ PV", `${n1(r.PPVINST / 1000)} kWc · ${r.NMOD} modules`)}
-    ${src ? node(190, 20, "pz-g", "grid", "#9AA9BA", hyb ? "Réseau SNEL" : "Groupe électrogène", hyb ? "la nuit, si disponible" : `${r.GKVA} kVA en secours`)
+    ${both ? node(8, 20, "pz-pv", "pv", "#F5B301", "Champ PV", `${n1(r.PPVINST / 1000)} kWc`, 112) + node(124, 20, "pz-g", "grid", "#9AA9BA", "Réseau SNEL", "la nuit", 112) + node(240, 20, "pz-gen", "gen", "#E67E22", "Groupe", `${r.GKVA} kVA · secours`, 112)
+        : node(20, 20, "pz-pv", "pv", "#F5B301", "Champ PV", `${n1(r.PPVINST / 1000)} kWc · ${r.NMOD} modules`)}
+    ${both ? "" : src ? (gen ? node(190, 20, "pz-gen", "gen", "#E67E22", "Groupe électrogène", `${r.GKVA} kVA en secours`) : node(190, 20, "pz-g", "grid", "#9AA9BA", "Réseau SNEL", "la nuit, si disponible"))
         : `<g transform="translate(190,20)"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/><g transform="translate(10,10)">${pico("sun", "#F5B301")}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">Ensoleillement</text><text id="pz-sun" x="12" y="52" font-size="19" fill="#fff" font-weight="800" font-family="var(--display)">Nuit</text><text x="12" y="66" font-size="10.5" fill="#9FB4CC">HSP ${n2(r.HSP)} h · autonome</text></g>`}
     <g transform="translate(105,128)"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/><g transform="translate(10,10)">${pico("inv", "#7DB6FF")}</g><text x="38" y="26" font-size="11.5" fill="#9FB4CC" font-weight="600">Onduleur / chargeur</text><text id="pz-inv" x="12" y="52" font-size="19" fill="#fff" font-weight="800" font-family="var(--display)">—</text><text x="12" y="66" font-size="10.5" fill="#9FB4CC">${r.NINV} × ${esc(short(r.INVMODEL)).slice(0, 26)}</text></g>
     <g transform="translate(20,236)"><rect width="150" height="74" rx="12" fill="#16283F" stroke="#24405F"/>
@@ -3608,7 +3610,7 @@ function startPvDash() {
         return false;
     } })();
     const d = R.sim.slice(24), sr = 12 - S.hjour / 2, ss = 12 + S.hjour / 2;
-    const at = (h) => { const i = Math.min(23, Math.max(0, Math.floor(h))), x = d[i], p = d[(i + 23) % 24], f = h - i; return { pv: x.pv, c: x.c, g: x.g, soc: p.soc + (x.soc - p.soc) * f, b: x.pv - x.c + x.g }; };
+    const at = (h) => { const i = Math.min(23, Math.max(0, Math.floor(h))), x = d[i], p = d[(i + 23) % 24], f = h - i; return { pv: x.pv, c: x.c, g: x.g, gp: S.groupe === "Oui" ? x.def || 0 : 0, soc: p.soc + (x.soc - p.soc) * f, b: x.pv - x.c + x.g }; };
     const cum = (h, k) => { let s = 0; for (let i = 0; i < 24 && i < h; i++)
         s += d[i][k] * Math.min(1, h - i); return s; };
     const set = (id, t) => { const e = document.getElementById(id); if (e)
@@ -3625,6 +3627,10 @@ function startPvDash() {
         set("pz-inv", pw(v.c));
         if (document.getElementById("pz-g"))
             set("pz-g", v.g > 0 ? pw(v.g) : "En attente");
+        if (document.getElementById("pz-gen")) {
+            set("pz-gen", v.gp > 0 ? pw(v.gp) : "Arrêt");
+            set("pz-gens", v.gp > 0 ? `${R.GKVA} kVA · en marche` : `${R.GKVA} kVA · auto < ${pc(Math.min(0.9, 1 - R.DOD + 0.1))}`);
+        }
         if (document.getElementById("pz-sun"))
             set("pz-sun", h >= sr && h < ss ? "Jour" : "Nuit");
         set("pz-soc", pc(v.soc));
@@ -3636,6 +3642,7 @@ function startPvDash() {
         }
         tog("pzf1", v.pv > 1);
         tog("pzf2", v.g > 1);
+        tog("pzf5", v.gp > 1);
         tog("pzf3", v.c > 1);
         tog("pzf4", Math.abs(v.b) > 5, v.b < 0);
         const svg = document.querySelector(".dz-svg");
