@@ -1189,10 +1189,10 @@ function compute(S) {
     const need = R.EJBUS + R.ENUITBAT, aut = need ? (R.EBATINST * 1000 * R.DOD * R.ETABAT) / Math.max(1, R.ENUITBAT) : 0;
     if (R.ENUITBAT > 0)
         Q.push([aut < 1 ? "ko" : "ok", "Autonomie des batteries la nuit", `${String(Math.round(aut * 10) / 10).replace(".", ",")} nuit(s) sans soleil ni réseau`, aut < 1 ? "La nuit n'est pas entièrement couverte : ajoutez des batteries." : "", "batSel"]);
-    if (R.COUV > 1.6)
+    if (R.COUV > 1.5)
         Q.push(["info", "Production solaire", `${P1(R.COUV)} du besoin sur le mois retenu`, "Champ PV largement surdimensionné : une partie de la production sera perdue si elle n'est pas consommée le jour.", "@app2"]);
     R.qual = Q;
-    if (R.COUV > 2)
+    if (R.COUV > 1.5)
         R.checks.push(["info", `Système surdimensionné : production ${pct(R.COUV)} du besoin (${(Math.round((R.EAC + R.EDC) / 100) / 10).toString().replace(".", ",")} kWh/jour). Vérifiez la liste des appareils ; le minimum imposé par le matériel (strings, onduleur, batterie) peut aussi expliquer cet écart.`, "@app2"]);
     if (R.PARTCLIM > 0.5)
         R.checks.push(["info", `La climatisation représente ${pct(R.PARTCLIM)} de l'énergie : des modèles inverter réduisent fortement le système.`, "@app"]);
@@ -3498,7 +3498,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611081454", APP_VER = "1.6", APP_NOTES = ["Résultats : batterie pleine affichée « Pleine · 100 % » et surplus solaire perdu indiqué sur le champ PV", "Alerte « Système surdimensionné » quand la production dépasse 200 % du besoin, avec accès direct aux appareils", "Toiture du visuel commercial plus réaliste", "Alerte automatique quand une nouvelle version est disponible"];
+const APP_BUILD = "202611081532", APP_VER = "1.6", APP_NOTES = ["Résultats : batterie pleine affichée « Pleine · 100 % » et surplus solaire perdu indiqué sur le champ PV", "Alerte « Système surdimensionné » quand la production dépasse 150 % du besoin, avec accès direct aux appareils", "Toiture du visuel commercial plus réaliste", "Alerte automatique quand une nouvelle version est disponible"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -4000,7 +4000,7 @@ function pvDash() {
      <span class="dz-status ${ko ? "ko" : "ok"}"><i></i>${ko ? ko + " point(s) à vérifier" : "Système conforme"}</span></div>
    <div class="dz-scen" role="group" aria-label="Scénario simulé">${pzScenList().map(([k, l]) => `<button type="button" data-pzs="${k}" aria-pressed="${PZS === k}">${l}</button>`).join("")}</div>
    <div id="pz-note" class="dz-note"></div>
-   ${r.COUV > 2 ? `<div class="dz-note warn" style="border-left-color:#F0883E"><b style="color:#FFB37A">Système surdimensionné</b> : la production couvre ${pc(r.COUV)} du besoin (${n1((r.EAC + r.EDC) / 1000)} kWh/jour). Vérifiez que tous les appareils du client sont saisis : un champ PV ou des batteries trop grands augmentent le prix sans service en plus.<br><button type="button" class="fixbtn" data-fix="@app2" style="margin-top:7px">Vérifier les appareils →</button></div>` : ""}
+   ${r.COUV > 1.5 ? `<div class="dz-note warn" style="border-left-color:#F0883E"><b style="color:#FFB37A">Système surdimensionné</b> : la production couvre ${pc(r.COUV)} du besoin (${n1((r.EAC + r.EDC) / 1000)} kWh/jour). Vérifiez que tous les appareils du client sont saisis : un champ PV ou des batteries trop grands augmentent le prix sans service en plus.<br><button type="button" class="fixbtn" data-fix="@app2" style="margin-top:7px">Vérifier les appareils →</button></div>` : ""}
    <div class="dz-sky"><svg viewBox="0 0 360 46" preserveAspectRatio="none"><path d="M10 42 Q180 -30 350 42" fill="none" stroke="#24405F" stroke-dasharray="3 5"/><circle id="pz-sunc" cx="10" cy="42" r="7" fill="#F5B301"/></svg><span id="pz-clock" class="dz-clock">00:00</span></div>
    ${svg}
    <div class="dz-ctrl"><button type="button" class="dz-play" id="pz-play" aria-label="Lecture / pause">❚❚</button><input type="range" id="pz-h" min="0" max="23.99" step="0.05" value="6" aria-label="Heure de la journée"><span class="dz-day">Journée type · HSP ${n2(r.HSP)} h</span></div>
