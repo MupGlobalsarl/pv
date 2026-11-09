@@ -1192,7 +1192,7 @@ function compute(S) {
         let e = emax;
         R.sim = [];
         for (let k = 0; k < 48; k++) {
-            const h = k % 24, pv = sw ? R.PRODJ * w(h) / sw : 0, c = day(h) ? scj / Math.max(1, nd) : scn / Math.max(1, 24 - nd), g = day(h) ? 0 : c * R.KRES, b = pv - c + g;
+            const h = k % 24, pv = sw ? R.PRODJ * w(h) / sw : 0, c = day(h) ? scj / Math.max(1, nd) : scn / Math.max(1, 24 - nd), g = !day(h) && ((h - Math.floor(ss) + 24) % 24) < Math.round((24 - nd) * R.KRES) ? c : 0, b = pv - c + g; // SNEL présent les premières heures de la nuit : il alimente alors toute la maison (batteries au repos)
             const raw = e + (b > 0 ? b * R.ETABAT : b), ne = Math.min(emax, Math.max(emin, raw));
             const sur = b > 0 ? Math.max(0, raw - emax) / R.ETABAT : 0, def = b < 0 ? Math.max(0, emin - raw) : 0;
             e = ne;
@@ -2828,7 +2828,7 @@ function liveSim(R, S, wx) {
     let e = emax * 0.75;
     const out = [];
     for (let k = 0; k < 48; k++) {
-        const h = k % 24, pv = k < 24 ? pvT(h) : pvR(h), c = day(h) ? scj / Math.max(1, nd) : scn / Math.max(1, 24 - nd), g = day(h) ? 0 : c * KR, b = pv - c + g;
+        const h = k % 24, pv = k < 24 ? pvT(h) : pvR(h), c = day(h) ? scj / Math.max(1, nd) : scn / Math.max(1, 24 - nd), g = !day(h) && ((h - Math.floor(ss) + 24) % 24) < Math.round((24 - nd) * KR) ? c : 0, b = pv - c + g; // SNEL présent les premières heures de la nuit : il alimente alors toute la maison (batteries au repos)
         const raw = e + (b > 0 ? b * R.ETABAT : b), ne = Math.min(emax, Math.max(emin, raw));
         const sur = b > 0 ? Math.max(0, raw - emax) / R.ETABAT : 0, def = b < 0 ? Math.max(0, emin - raw) : 0;
         const bat = (ne - e);
@@ -4825,7 +4825,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611091845", APP_VER = "1.6", APP_NOTES = ["Schéma de câblage dans le style Victron (Lynx, Class-T, SmartShunt, disjoncteurs, terre), adapté automatiquement à chaque projet", "Simulateur : photos du matériel du projet", "Mon installation en direct : réseau et groupe séparés, maison alimentée directement par l'onduleur", "Présentation client : schémas jour / nuit adaptés au matériel du projet, nouvelle animation des lignes"];
+const APP_BUILD = "202611091849", APP_VER = "1.6", APP_NOTES = ["Réseau SNEL présent : il alimente toute la maison et la batterie reste au repos (animation, tableau de bord, simulation 24 h)", "Schéma de câblage dans le style Victron (Lynx, Class-T, SmartShunt, disjoncteurs, terre), adapté automatiquement à chaque projet", "Simulateur : photos du matériel du projet", "Mon installation en direct : réseau et groupe séparés, maison alimentée directement par l'onduleur"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
