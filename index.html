@@ -178,6 +178,8 @@ main { padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px)) }
 .catimg span { font-size: 9.5px; color: #1E8449; text-align: center; line-height: 1.15 } .catimg span.ill { color: var(--muted) }
 .catt { display: grid; gap: 2px; min-width: 0; font-size: 13px } .catt > b { font-size: 13.5px; overflow-wrap: anywhere }
 .catf { display: flex; justify-content: space-between; align-items: center; margin-top: 4px } .catf b { color: #B8860B; font-size: 14px }
+.pickbtn { margin: 2px 0 -2px }
+.pickg { grid-template-columns: 1fr } .pickc { text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100% } .pickc.on { border: 2px solid #1E8449; background: var(--ok-bg) }
 .checks { display: grid; gap: 8px }
 .chk.fixable { cursor: pointer }
 .fixbtn { display: inline-block; margin: 6px 0 0; font: inherit; font-size: 12.5px; font-weight: 800; color: #fff; background: var(--brand-2, #1E7A46); border: 0; border-radius: 999px; padding: 5px 12px; cursor: pointer; vertical-align: middle }
@@ -3944,6 +3946,71 @@ function matCard(type, ref, brand) {
     const im = matImg(type, ref, brand);
     return `<div class="prodph">${im.html.replace("<img ", '<img class="pi" ')}<div><b>${esc(ref)}</b><span>${im.kind === "Illustration" ? "Illustration (photo constructeur à venir)" : im.kind + " (" + (prodImg(ref) || {}).from + ")"}</span></div></div>`;
 }
+/* choix d'un matériel avec images (remplace la liste du téléphone, qui ne peut pas afficher d'images) */
+let PICK = null;
+function pickList(kind) {
+    const t = { inv: S.marque === "Victron Energy" ? "vic" : "hyb", mppt: "mppt", bat: "bat", pv: "pv" }[kind], save = CATF.t;
+    CATF.t = t;
+    let L = catalItems();
+    CATF.t = save;
+    if (kind === "inv" && t === "hyb")
+        L = L.filter((x) => x.brand === S.marque);
+    if (kind === "bat")
+        L = L.filter((x) => x.pick.battech === S.battech);
+    return L.map((x, i) => [x, i]).sort((a, b) => (b[0].brand === S.marque) - (a[0].brand === S.marque) || a[1] - b[1]).map((a) => a[0]);
+}
+function pickBtn(kind) { return `<button type="button" class="btn ghost wide pickbtn" data-pickopen="${kind}">Choisir en images (photos et caractéristiques)</button>`; }
+function pickOpen(kind, q) {
+    PICK = { kind, q: q || "" };
+    const ql = PICK.q.toLowerCase(), L = pickList(kind).filter((x) => !ql || (x.ref + " " + x.specs + " " + x.brand).toLowerCase().includes(ql));
+    const cur = { inv: R.INVMODEL, mppt: R.MPPTSEL, bat: R.BAT.ref, pv: S.mod.ref }[kind];
+    const title = { inv: "Choisir l'onduleur", mppt: "Choisir le régulateur MPPT", bat: "Choisir la batterie", pv: "Choisir le module" }[kind];
+    openSheet(`<div class="ph"><h2>${title}</h2><button class="x" type="button" data-close aria-label="Fermer">×</button></div>
+  <div class="f" style="margin-bottom:8px"><label for="pick-q">Rechercher</label><input id="pick-q" type="search" value="${esc(PICK.q)}" placeholder="marque, puissance, capacité…"></div>
+  <p class="small muted" style="margin:0 0 8px">${L.length} modèle(s)${kind === "bat" ? " · technologie " + esc(S.battech) : kind === "inv" && S.marque !== "Victron Energy" ? " · marque " + esc(S.marque) : ""}</p>
+  <div class="catg pickg">${L.map((x, i) => { const im = matImg(x.type, x.ref, x.brand); return `<button type="button" class="catc pickc${x.ref === cur ? " on" : ""}" data-pickref="${esc(x.ref)}"><div class="catimg">${im.html}<span class="${im.kind === "Illustration" ? "ill" : ""}">${im.kind}</span></div><div class="catt"><b>${esc(x.ref)}</b><span class="small muted">${esc(x.brand)}</span><span class="small">${esc(x.specs)}</span><div class="catf"><b>${n0(x.prix)} USD</b>${x.ref === cur ? '<span class="small" style="color:#1E8449;font-weight:800">✓ choisi</span>' : ""}</div></div></button>`; }).join("")}</div>`);
+}
+document.addEventListener("click", (e) => {
+    const t = e.target.closest && e.target.closest("button");
+    if (!t)
+        return;
+    const d = t.dataset;
+    if ("pickopen" in d) {
+        e.stopPropagation();
+        if (typeof DEMO !== "undefined" && DEMO) {
+            blocked();
+            return;
+        }
+        pickOpen(d.pickopen);
+        return;
+    }
+    if ("pickref" in d && PICK) {
+        e.stopPropagation();
+        const x = pickList(PICK.kind).find((y) => y.ref === d.pickref);
+        if (!x)
+            return;
+        Object.assign(S, x.pick);
+        if (x.pick.invForce !== undefined && x.pick.marque !== "Victron Energy")
+            S.mppt = "auto";
+        closeSheet();
+        commit();
+        toast("Choisi : " + x.ref);
+        PICK = null;
+        return;
+    }
+}, true);
+document.addEventListener("input", (e) => { if (e.target.id === "pick-q" && PICK) {
+    const p = e.target.selectionStart;
+    pickOpen(PICK.kind, e.target.value);
+    const n = document.getElementById("pick-q");
+    if (n) {
+        n.focus();
+        try {
+            n.setSelectionRange(p, p);
+        }
+        catch (er) { }
+    }
+} });
 /* MUPGLOBAL SARL – alertes renforcées sur les quantités modifiées dans le Budget */
 function qIssues() { return (R.checks || []).filter((c) => String(c[2] || "").startsWith("@bud:") && c[0] !== "ok"); }
 function qBanner(place) {
@@ -4158,7 +4225,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611091436", APP_VER = "1.6", APP_NOTES = ["Images de toutes les batteries Deye (SE-G5.1 Pro-B, RW-M6.1-B, SE-F5, SE-F12, SE-F16…)", "Catalogue du matériel illustré (Plus) avec recherche et bouton « Choisir »", "Image du matériel choisi dans Projet et Budget", "Gamme Deye Afrique et photos Felicity"];
+const APP_BUILD = "202611091449", APP_VER = "1.6", APP_NOTES = ["Projet : bouton « Choisir en images » pour l'onduleur, le régulateur, la batterie et le module", "Images de toutes les batteries Deye", "Catalogue du matériel illustré (Plus)", "Gamme Deye Afrique et photos Felicity"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -4956,13 +5023,16 @@ function vPar() {
   ${sec("Installation", esc(S.marque), `${fld("marque", "Marque d'onduleur", { opts: brands, hint: "Victron : MultiPlus-II + régulateurs séparés. Autres marques (Deye, Growatt, Must, Felicity, SRNE, Sako, Hanchu ESS, Sunsynk, Luxpower, Solis, GoodWe, Inverex, Axpert, Easun, Mecer, DEV Solaire, Raggie) : onduleur hybride à MPPT intégrés." })}
     ${seg("phases", "Réseau à alimenter", [["Monophasé", "Monophasé"], ["Triphasé", "Triphasé"]])}
     ${matCard("inverter", R.INVMODEL, S.marque)}${R.ISVIC && R.NMPPT ? matCard("mppt", R.MPPTSEL, "Victron Energy") : ""}
+    ${pickBtn("inv")}
     ${fld("invForce", "Modèle d'onduleur", { opts: [["", "Automatique (" + short(R.INVREC) + ")"], ...R.invList.map((m) => [m, m])] })}
     ${seg("vsys", "Tension du parc batteries", [["auto", "Auto"], [12, "12 V"], [24, "24 V"], [48, "48 V"]])}
     ${S.vsys === "auto" ? seg("vmeth", "Méthode de choix de la tension", [["both", "Norme + Victron"], ["norme", "Norme"], ["victron", "Victron"]]) : ""}
     <p class="small muted" style="margin:-4px 0 0">Norme (champ PV ${Math.round(R.PPVREQ)} Wc) : 12 V ≤ 500 Wc, 24 V ≤ 2 kWc, 48 V au-delà → <b>${R.VNORME} V</b>. Victron (onduleur ${Math.round(R.SREQ)} VA) : 12 V ≤ 1,6 kVA, 24 V ≤ 5 kVA, 48 V au-delà → <b>${R.VVIC} V</b> (${Math.round(R.IDCVIC)} A DC). Retenue : <b>${R.VSYS} V</b>${R.VFORCED ? ` – ${R.VBASE} V conseillés` : ""}.</p>
+    ${R.ISVIC ? pickBtn("mppt") : ""}
     ${R.ISVIC ? fld("mppt", "Régulateur MPPT Victron", { opts: [["auto", "Automatique (" + R.MPPTSEL.replace("SmartSolar ", "") + ")"], ...CAT.mppt.map((m) => [m[0], m[0] + ((R.mpptRank.find((x) => x.m === m[0]) || {}).ok ? "" : " – incompatible")])], hint: R.mpptReplaced ? "Modèle choisi incompatible : remplacé par " + R.MPPTSEL + "." : "" }) : ""}
     ${fld("battech", "Technologie de batteries", { opts: Object.keys(CAT.tech) })}
     ${matCard("battery", R.BAT.ref, (CAT.bat.find((b) => b[0] === R.BAT.ref) || [])[8] || S.marque)}
+    ${pickBtn("bat")}
     ${fld("batSel", "Modèle de batterie", { opts: [["auto", "Automatique (le moins cher, toutes marques)"], ...[...new Set(CAT.bat.map((b) => b[8]))].filter((x) => x !== "Générique").sort().map((m) => ["auto:" + m, "Automatique – " + m]), ...CAT.bat.map((b) => [b[0], b[0]]), ["perso", "Autre batterie (saisie libre)"]], hint: "Retenue : " + R.NBAT + " × " + R.BAT.ref + (R.batReplaced ? " (choix incompatible remplacé)" : "") + " · tension unitaire " + n1(R.BAT.v) + " V · " + n0(R.BAT.ah) + " Ah · " + R.NSER + " en série × " + R.NPAR + " en parallèle" })}
     ${S.batSel === "perso" ? `<div class="g2">${fld("bat.v", "Tension", { u: "V" })}${fld("bat.ah", "Capacité", { u: "Ah" })}</div>${fld("bat.ref", "Référence de la batterie", { text: 1 })}` : ""}
     ${fld("auto", "Autonomie", { u: "j" })}
@@ -4972,6 +5042,7 @@ function vPar() {
   ${sec("Champ PV et orientation", `${S.tilt}° · ${pc(R.FCHAMP)}`, `<div class="g3">${fld("tilt", "Inclinaison", { u: "°" })}${fld("az", "Écart / Nord", { u: "°" })}${fld("ombr", "Ombrage", { u: "%", pct: 1 })}</div>
     <p class="small muted" style="margin:0">Écart d'azimut : 0 = plein Nord (optimal dans l'hémisphère Sud), 90 = Est ou Ouest, 180 = plein Sud. Rendement d'orientation : <b>${pc(R.FORIENT)}</b>.</p>
     ${matCard("panel", S.mod.ref, (PANELS.find((p) => p[0] === S.modSel) || [])[1] || "")}
+    ${pickBtn("pv")}
     ${fld("modSel", "Module du catalogue", { opts: [["perso", "Saisie manuelle (valeurs ci-dessous)"], ...PANELS.filter((x) => !/personnalisé/i.test(x[0])).map((x) => [x[0], x[0] + " – " + x[3] + " Wc"])], hint: S.modSel && S.modSel !== "perso" ? "Caractéristiques reprises du catalogue (valeurs indicatives). Choisissez « Saisie manuelle » pour entrer votre fiche." : "28 modules : Jinko, LONGi, JA, Trina, Canadian, DEV Solaire, Raggie…" })}${fld("mod.ref", "Module", { text: 1 })}<div class="g3">${fld("mod.p", "Puissance", { u: "Wc" })}${fld("mod.voc", "Voc", { u: "V" })}${fld("mod.vmp", "Vmp", { u: "V" })}</div><div class="g3">${fld("mod.isc", "Isc", { u: "A" })}${fld("mod.imp", "Imp", { u: "A" })}${fld("nsForce", "Série forcée", { hint: "0 = auto" })}</div>`)}
   ${sec("Ensoleillement", `HSP ${n2(R.HSP)} h`, `${fld("base", "Base de calcul", { opts: [["min", "Mois le plus défavorable"], ["avg", "Moyenne annuelle"], ...MONTHS.map((m, i) => [String(i), m])] })}
     <div class="g3">${MONTHS.map((m, i) => fld("hsp." + i, m, { u: "h" })).join("")}</div><p class="small muted" style="margin:0">Heures de plein soleil (kWh/m²/j) sur plan incliné. Valeurs par défaut : Lubumbashi.</p>
