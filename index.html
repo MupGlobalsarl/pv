@@ -159,6 +159,8 @@ main { padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px)) }
 .qpop-b { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px } .qpop-b .btn { flex: 1; min-width: 140px }
 .qpop-b .btn.ghost { color: #1C1C1C }
 @media print { .qban .fixbtn, .qpop { display: none !important } .qban { animation: none } }
+.btn.trial-btn { display: grid !important; justify-items: center; gap: 2px; background: linear-gradient(135deg, #E8A317, #F5C04A) !important; color: #10202F !important; border: 0; padding: 12px 14px; box-shadow: 0 6px 18px rgba(232,163,23,.35) } .trial-btn b { font: 800 17px var(--display) } .trial-btn span { font-size: 12.5px; font-weight: 600 }
+.trial-off { text-align: center; font-size: 13px; color: var(--muted); padding: 8px; border: 1px dashed var(--line); border-radius: 10px }
 .checks { display: grid; gap: 8px }
 .chk.fixable { cursor: pointer }
 .fixbtn { display: inline-block; margin: 6px 0 0; font: inherit; font-size: 12.5px; font-weight: 800; color: #fff; background: var(--brand-2, #1E7A46); border: 0; border-radius: 999px; padding: 5px 12px; cursor: pointer; vertical-align: middle }
@@ -3402,12 +3404,12 @@ catch (e) {
 }
 const EMF = [["adr", "Adresse"], ["tel", "Téléphone / WhatsApp"], ["mail", "E-mail"], ["rccm", "RCCM"], ["idnat", "Id. Nat."], ["nif", "N° impôt (NIF)"]];
 function emOk() { return typeof LIC !== "undefined" && LIC.ok && !DEMO; }
-function emName() { return emOk() ? LIC.name : "VERSION DE DÉMONSTRATION"; }
-function emLic() { return emOk() ? `licence n° ${String(LIC.serial).padStart(4, "0")}` : "version de démonstration"; }
+function emName() { return emOk() ? LIC.name : typeof TRIAL !== "undefined" && TRIAL ? "VERSION D’ESSAI GRATUIT" : "VERSION DE DÉMONSTRATION"; }
+function emLic() { return emOk() ? `licence n° ${String(LIC.serial).padStart(4, "0")}` : typeof TRIAL !== "undefined" && TRIAL ? "version d’essai gratuit" : "version de démonstration"; }
 function emLines() { const e = EM; return [e.adr, e.tel && "Tél. " + e.tel, e.mail, e.rccm && "RCCM " + e.rccm, e.idnat && "Id. Nat. " + e.idnat, e.nif && "NIF " + e.nif].filter(Boolean); }
 function emMention(doc = "ce devis") {
     return emOk() ? `Document établi sous la seule responsabilité de ${emName()}, titulaire de la ${emLic()} du logiciel MUPGLOBAL. MUPGLOBAL SARL, éditeur du logiciel, n'est pas partie à ${doc} ni à son exécution.`
-        : "VERSION DE DÉMONSTRATION – document sans valeur contractuelle.";
+        : typeof TRIAL !== "undefined" && TRIAL ? "VERSION D’ESSAI GRATUIT du logiciel MUPGLOBAL – document sans valeur contractuelle. Activez une licence pour établir vos devis à votre nom." : "VERSION DE DÉMONSTRATION – document sans valeur contractuelle.";
 }
 function emWa() { const t = String(EM.tel || "").replace(/[^\d]/g, ""); return t.length >= 9 ? t : ""; }
 function emSave() { try {
@@ -3433,6 +3435,179 @@ document.addEventListener("change", (e) => {
     if (typeof render === "function")
         render();
 });
+/* MUPGLOBAL SARL – essai gratuit limité à 3 projets par appareil (état recopié en plusieurs endroits et contrôlé par empreinte) */
+var TRIAL = false;
+const TRIAL_MAX = 3, TR_K1 = "mupglobal_pv_trial", TR_K2 = "_mg_ui_cache_v3", TR_CK = "mgui3", TR_DB = "mg_ui", TR_SALT = "MUPGLOBAL·essai·PV·2026";
+function trH(o) { const s = TR_SALT + "|" + o.d + "|" + o.ids.join(",") + "|" + (o.end ? 1 : 0) + "|" + o.t0; let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+} return h.toString(36); }
+function trParse(raw) {
+    if (!raw)
+        return null;
+    try {
+        const o = JSON.parse(raw.charAt(0) === "{" ? raw : atob(raw));
+        if (!o || !Array.isArray(o.ids))
+            return null;
+        if (o.h !== trH(o))
+            return { d: o.d, ids: o.ids || [], end: 1, t0: o.t0 || Date.now(), bad: 1 };
+        return o;
+    }
+    catch (e) {
+        return { d: "", ids: [], end: 1, t0: Date.now(), bad: 1 };
+    }
+}
+function trCookie() { try {
+    const m = document.cookie.match(new RegExp("(?:^|; )" + TR_CK + "=([^;]*)"));
+    return m ? decodeURIComponent(m[1]) : null;
+}
+catch (e) {
+    return null;
+} }
+function trMerge(list) {
+    const ok = list.filter(Boolean);
+    if (!ok.length)
+        return null;
+    const ids = [...new Set(ok.flatMap((o) => o.ids || []))];
+    return { d: DEVICE, ids, end: ok.some((o) => o.end) || ids.length > TRIAL_MAX ? 1 : 0, t0: Math.min(...ok.map((o) => o.t0 || Date.now())) };
+}
+function trRead() { let a = null, b = null; try {
+    a = localStorage.getItem(TR_K1);
+    b = localStorage.getItem(TR_K2);
+}
+catch (e) { } return trMerge([trParse(a), trParse(b), trParse(trCookie())]); }
+function trWrite(o) {
+    o.d = DEVICE;
+    o.h = trH(o);
+    const j = JSON.stringify(o), b64 = btoa(j);
+    try {
+        localStorage.setItem(TR_K1, j);
+        localStorage.setItem(TR_K2, b64);
+    }
+    catch (e) { }
+    try {
+        document.cookie = TR_CK + "=" + encodeURIComponent(b64) + "; max-age=315360000; path=/; SameSite=Lax";
+    }
+    catch (e) { }
+    try {
+        const r = indexedDB.open(TR_DB, 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("s");
+        r.onsuccess = () => { try {
+            const tx = r.result.transaction("s", "readwrite");
+            tx.objectStore("s").put(b64, "t");
+        }
+        catch (e) { } };
+    }
+    catch (e) { }
+}
+function trIdb(cb) {
+    try {
+        const r = indexedDB.open(TR_DB, 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("s");
+        r.onerror = () => cb(null);
+        r.onsuccess = () => { try {
+            const g = r.result.transaction("s", "readonly").objectStore("s").get("t");
+            g.onsuccess = () => cb(trParse(g.result || null));
+            g.onerror = () => cb(null);
+        }
+        catch (e) {
+            cb(null);
+        } };
+    }
+    catch (e) {
+        cb(null);
+    }
+}
+let TR = null;
+function trialState() { return TR || trRead() || { d: DEVICE, ids: [], end: 0, t0: 0 }; }
+function trialUsed() { return Math.min(TRIAL_MAX, trialState().ids.length); }
+function trialEnded() { const s = trialState(); return !!s.end || s.ids.length > TRIAL_MAX; }
+/* enregistre chaque projet utilisé pendant l'essai (une suppression ne rend pas de crédit) */
+function trialTrack() {
+    if (!TRIAL || typeof store === "undefined")
+        return;
+    const s = trialState(), set = new Set(s.ids);
+    for (const id in store.items)
+        set.add(id);
+    s.ids = [...set];
+    if (s.ids.length > TRIAL_MAX)
+        s.end = 1;
+    TR = s;
+    trWrite(s);
+    if (s.end)
+        trialStop();
+}
+let TR_CLI = {};
+try {
+    TR_CLI = JSON.parse(localStorage.getItem(TR_K1 + "_c") || "{}") || {};
+}
+catch (e) { }
+function trialStart() {
+    trIdb((o) => { if (o) {
+        const m = trMerge([trialState(), o]);
+        if (m)
+            TR = m;
+    } trialStart2(); });
+}
+function trialStart2() {
+    if (trialEnded())
+        return trialStop();
+    const s = trialState();
+    if (!s.t0)
+        s.t0 = Date.now();
+    TR = s;
+    trWrite(s);
+    TRIAL = true;
+    DEMO = false;
+    S = migrate(store.items[store.cur].st);
+    trialTrack();
+    if (!TRIAL)
+        return;
+    closeSheet();
+    commit();
+    toast(`Essai gratuit : projet ${trialUsed()} sur ${TRIAL_MAX}`);
+}
+function trialStop() {
+    const was = TRIAL;
+    TRIAL = false;
+    DEMO = true;
+    S = defaults();
+    if (typeof commit === "function") {
+        commit();
+        if (was || !LIC.ok)
+            openLicence(`Essai gratuit terminé : vous avez utilisé vos ${TRIAL_MAX} projets d'essai sur cet appareil. Activez votre licence pour continuer ; vos projets d'essai seront conservés.`);
+    }
+}
+function trialInit() {
+    if (LIC.ok || RBLOCK)
+        return;
+    const s = trRead();
+    if (!s || !s.t0)
+        return;
+    TR = s;
+    if (trialEnded()) {
+        trWrite(s);
+        return;
+    }
+    TRIAL = true;
+    DEMO = false;
+}
+function trialLate() { trIdb((o) => { if (!o)
+    return; const m = trMerge([trialState(), o]); if (m) {
+    TR = m;
+    trWrite(m);
+    if (TRIAL && trialEnded())
+        trialStop();
+} }); }
+function trialBtn() {
+    if (LIC.ok)
+        return "";
+    if (trialEnded())
+        return `<div class="trial-off">Essai gratuit déjà utilisé sur cet appareil (${TRIAL_MAX}/${TRIAL_MAX} projets).</div>`;
+    const u = trialUsed();
+    return `<button type="button" class="btn wide trial-btn" data-trial><b>Essai gratuit</b><span>${u ? `${TRIAL_MAX - u} projet(s) d'essai restant(s) sur ${TRIAL_MAX}` : `Toutes les fonctions pour ${TRIAL_MAX} projets, sans clé`}</span></button>`;
+}
+function trialStrip() { return `<span class="bad" style="background:#E8A317;color:#10202F">Essai gratuit</span><span>Projet(s) utilisé(s) : <b>${trialUsed()} / ${TRIAL_MAX}</b> · documents marqués « version d'essai »</span><button type="button" class="chip" data-lic style="padding:3px 10px">Acheter la licence</button>`; }
 /* MUPGLOBAL SARL – alertes renforcées sur les quantités modifiées dans le Budget */
 function qIssues() { return (R.checks || []).filter((c) => String(c[2] || "").startsWith("@bud:") && c[0] !== "ok"); }
 function qBanner(place) {
@@ -3647,7 +3822,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611090824", APP_VER = "1.6", APP_NOTES = ["Coffret DC : protection de chaque string toujours prévue – sectionneur porte-fusible gPV ou disjoncteur DC au choix (Projet → Protections)", "Budget : quantités modifiables avec alerte immédiate et points de vigilance", "Le visuel, le schéma unifilaire et la simulation suivent les quantités choisies", "Photos réelles des onduleurs Deye"];
+const APP_BUILD = "202611090920", APP_VER = "1.6", APP_NOTES = ["Essai gratuit : toutes les fonctions pour 3 projets, sans clé (documents marqués « version d'essai »)", "Coffret DC : sectionneur porte-fusible gPV ou disjoncteur DC par string, au choix", "Budget : quantités modifiables avec alerte immédiate et points de vigilance", "Photos réelles des onduleurs Deye"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -3847,6 +4022,7 @@ try {
 catch (e) { }
 if (RBLOCK)
     DEMO = true;
+trialInit();
 async function rbFetch() {
     const urls = [`https://docs.google.com/spreadsheets/d/${RB_ID}/gviz/tq?tqx=out:csv&gid=${RB_GID}&t=${Date.now()}`, `https://docs.google.com/spreadsheets/d/${RB_ID}/export?format=csv&gid=${RB_GID}&t=${Date.now()}`];
     for (const u of urls) {
@@ -3911,7 +4087,8 @@ catch (e) { } }
 function persist() { try {
     localStorage.setItem(KEY, JSON.stringify(store));
 }
-catch (e) { } }
+catch (e) { } if (TRIAL)
+    trialTrack(); }
 function uid() { return Math.random().toString(36).slice(2, 9); }
 function migrate(st) { const d = defaults(); if (!st.v15) {
     st.vsys = "auto";
@@ -3977,6 +4154,10 @@ function header() {
         const pb = $("#pbar");
         if (pb)
             pb.hidden = DEMO;
+    }
+    if (TRIAL) {
+        $("#strip").innerHTML = trialStrip();
+        return;
     }
     if (DEMO) {
         $("#strip").innerHTML = `<span class="bad">Démo</span><span>Les modifications sont désactivées.</span><span><b>${n1(R.PPVINST / 1000)} kWc</b> · <b>${n0(R.TOTTTC)} ${esc(S.devise)}</b> TTC</span>`;
@@ -4529,7 +4710,7 @@ function vRapport() {
       <h3>Schéma unifilaire</h3><div class="unibox">${unifilaireMobileSVG(r, S)}</div>
       <h3>Points de vigilance</h3>${qBanner("rapport")}<div class="checks">${r.checks.map(([s, t, tg]) => `<div class="chk ${s}${s !== "ok" && tg ? " fixable" : ""}"${s !== "ok" && tg ? ` data-fixz="${esc(tg)}"` : ""}>${svgI(s, 16)}<span class="small">${esc(t)}${s !== "ok" && tg ? `<button type="button" class="fixbtn noprint" data-fix="${esc(tg)}">Corriger →</button>` : ""}</span></div>`).join("")}</div>
       <div class="sign"><div>Le client (bon pour accord)</div><div>Pour ${esc(emName())}</div></div>
-      ${DEMO ? '<p class="chk ko" style="justify-content:center;font-weight:700;margin-top:14px">VERSION DE DÉMONSTRATION – exemple non contractuel</p>' : ""}
+      ${DEMO ? '<p class="chk ko" style="justify-content:center;font-weight:700;margin-top:14px">VERSION DE DÉMONSTRATION – exemple non contractuel</p>' : TRIAL ? '<p class="chk ko" style="justify-content:center;font-weight:700;margin-top:14px">VERSION D’ESSAI GRATUIT – document sans valeur contractuelle</p>' : ""}
       <p class="foot">${esc(emMention("cette étude"))}<br>Étude de pré-dimensionnement réalisée avec le logiciel MUPGLOBAL (méthode Victron Energy). Prix indicatifs valables 30 jours, à confirmer après visite technique.</p>
     </div>
   </div>
@@ -4749,6 +4930,10 @@ document.addEventListener("click", (e) => {
     }
     if ("lic" in d || (t.id === "btn-proj" && DEMO))
         return openLicence();
+    if ("trial" in d) {
+        trialStart();
+        return;
+    }
     if ("demo" in d) {
         closeSheet();
         toast("Mode démonstration");
@@ -5102,7 +5287,7 @@ document.addEventListener("change", (e) => {
         commit();
     }
 });
-function blocked() { toast("Version démo : activez votre licence pour modifier"); setTimeout(openLicence, 600); }
+function blocked() { const end = typeof trialEnded === "function" && trialEnded(); toast(end ? "Essai gratuit terminé (3 projets) : activez votre licence" : "Version démo : lancez l'essai gratuit ou activez votre licence"); setTimeout(() => openLicence(end ? `Essai gratuit terminé : vous avez utilisé vos ${TRIAL_MAX} projets d'essai sur cet appareil. Activez votre licence pour continuer ; vos projets d'essai seront conservés.` : ""), 600); }
 function openLicence(msg) {
     const wa = "https://wa.me/" + WA_NUM + "?text=" + encodeURIComponent(`Bonjour MUPGLOBAL SARL, je souhaite une licence du programme PV mobile. Code de mon appareil : ${fmtCode(DEVICE)}`);
     openSheet(`<div class="ph"><h2>Activer votre licence</h2>${LIC.ok ? '<button class="x" type="button" data-close aria-label="Fermer">×</button>' : ""}</div>
@@ -5115,6 +5300,7 @@ function openLicence(msg) {
     <form class="form" id="actf"><div class="f"><label for="lic-key">Clé de licence reçue</label><textarea id="lic-key" rows="4" spellcheck="false" autocomplete="off" placeholder="Collez ici la clé MUP-…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);font:16px/1.4 ui-monospace,Menlo,Consolas,monospace;word-break:break-all"></textarea></div>
     <div id="lic-msg" role="alert" ${msg ? "" : "hidden"} class="chk ko"><span>${esc(msg || "")}</span></div>
     <button class="btn wide" type="submit">Activer</button></form>
+    ${trialBtn()}
     ${LIC.ok ? "" : '<button type="button" class="btn ghost wide" data-demo>Essayer la démonstration</button>'}
   </div>`);
     $("#actf").addEventListener("submit", (e) => { e.preventDefault(); activate(); });
@@ -5139,6 +5325,7 @@ function activate() {
     catch (e) { }
     const wasDemo = DEMO;
     DEMO = false;
+    TRIAL = false;
     setTimeout(rbCheck, 1000);
     if (wasDemo) {
         S = migrate(store.items[store.cur].st);
@@ -5218,7 +5405,8 @@ try {
 }
 catch (e) { }
 if (DEMO)
-    openLicence(RBLOCK ? RB_MSG : LIC.expired ? LIC.why : (LICRAW ? LIC.why : ""));
+    openLicence(RBLOCK ? RB_MSG : LIC.expired ? LIC.why : (LICRAW ? LIC.why : trialEnded() ? `Essai gratuit terminé : vous avez utilisé vos ${TRIAL_MAX} projets d'essai sur cet appareil. Activez votre licence pour continuer.` : ""));
+trialLate();
 setTimeout(rbCheck, 2500);
 window.addEventListener("online", () => setTimeout(rbCheck, 1500));
 setInterval(rbCheck, 6 * 3600 * 1000);
