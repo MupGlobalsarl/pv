@@ -786,7 +786,7 @@ function defaults() {
     return {
         projet: { nom: "Maison d'habitation – Lubumbashi", site: "Lubumbashi (Haut-Katanga, RD Congo)", client: "", tel: "", ref: "DV-2026-001" },
         hsp: [5.85, 5.85, 6.08, 6.08, 6.08, 6.34, 6.34, 6.34, 6.85, 6.85, 6.85, 5.85], base: "min",
-        tmin: 5, tmax: 33, echauff: 25, vsys: "auto", protbat: "Fusible", battech: "Lithium LiFePO4", auto: 1, ks: 0.8, cosphi: 0.8,
+        tmin: 5, tmax: 33, echauff: 25, vsys: "auto", protbat: "Fusible", protpv: "Fusible gPV", battech: "Lithium LiFePO4", auto: 1, ks: 0.8, cosphi: 0.8,
         etaond: 0.93, etamppt: 0.98, etacab: 0.98, kpvloss: 0.9, marge: 1.1, vac: 230, hjour: 11,
         mod: { ref: "Module monocristallin 550 Wc", p: 550, voc: 49.6, vmp: 41.7, isc: 14, imp: 13.2, kvoc: -0.0027, kp: -0.0035, kvmp: -0.0035 },
         siteSel: "RD Congo – Lubumbashi", mppt: "auto", invForce: "", nsForce: 0, batSel: "Module LiFePO4 48 V 100 Ah (générique)", v15: 1, vmeth: "both", vn12: 500, vn24: 2000, vv12: 1600, vv24: 5000,
@@ -1068,7 +1068,7 @@ function compute(S) {
     const it = [
         ["mod", L1, "Modules photovoltaïques", M.ref, R.NMOD, 140], ["struct", L1, "Structures de montage aluminium", "par module", R.NMOD, 35],
         ["cpv", L1, "Câble solaire H1Z2Z2-K", `${cp.sec} mm²`, ru(R.NSTR * S.lpv * 2 * 1.1), 1.5], ["mc4", L1, "Connecteurs MC4 (paires)", "1000/1500 V DC", R.NSTR * 2, 3],
-        ["cofdc", L1, "Coffret DC PV IP65 + sectionneur", "un par MPPT", R.NMPPT, 120], ["gpv", L1, "Fusibles gPV + porte-fusibles", `${cp.fuse} A`, R.STRMPPT >= 3 ? R.NSTR * 2 : 0, 8],
+        ["cofdc", L1, "Coffret DC PV IP65 + sectionneur", "un par MPPT", R.NMPPT, 120], ...(S.protpv === "Disjoncteur DC" ? [["gpv", L1, "Disjoncteurs DC PV 2 pôles (un par string)", `${cp.fuse} A – ${R.UCPV} V DC, courbe PV`, R.NSTR, 35]] : [["gpv", L1, "Sectionneurs porte-fusibles + fusibles gPV (+ et – de chaque string)", `${cp.fuse} A – 1000 V DC`, R.NSTR * 2, 8]]),
         ["mppt", L2, "Régulateurs MPPT", R.ISVIC ? R.MPPTSEL : "Intégrés à l'onduleur", R.NREG, R.ISVIC ? R.MPPTPRIX : 0, true],
         ["inv", L2, "Onduleur / chargeur", R.INVMODEL, R.NINV, U.prix, true],
         ["bat", L3, "Batteries", R.BAT.ref, R.NBAT, R.BAT.prix], ["rack", L3, "Rack / armoire batteries", "≈ 8 modules par rack", ru(R.NBAT / 8), 250],
@@ -1222,7 +1222,7 @@ function compute(S) {
             else if (q > qc * 1.5)
                 ck("info", `Batteries : ${q} au lieu de ${qc} calculées → stockage surdimensionné (${(Math.round(E / 100) / 10).toString().replace(".", ",")} kWh) : le champ PV risque de ne pas les recharger complètement.`, "bat");
         }
-        const PROT = { gpv: "fusibles gPV", cofdc: "coffrets DC PV", fbat: S.protbat === "Disjoncteur DC" ? "disjoncteurs DC batterie" : "fusibles batterie", fmppt: "protections MPPT → batterie", coupe: "coupe-batterie", spddc: "parafoudres DC", djac: "disjoncteur de sortie onduleur", id: "différentiels 30 mA", spdac: "parafoudres AC du tableau", spdacin: "parafoudres AC d'entrée", djspd: "disjoncteurs de parafoudres", piq: "piquets de terre", borne: "borne de terre", tige: "paratonnerre", poie: "prise de terre du paratonnerre", acin: "raccordement entrée AC (disjoncteur + inverseur)" };
+        const PROT = { gpv: S.protpv === "Disjoncteur DC" ? "disjoncteurs DC de string" : "porte-fusibles gPV de string", cofdc: "coffrets DC PV", fbat: S.protbat === "Disjoncteur DC" ? "disjoncteurs DC batterie" : "fusibles batterie", fmppt: "protections MPPT → batterie", coupe: "coupe-batterie", spddc: "parafoudres DC", djac: "disjoncteur de sortie onduleur", id: "différentiels 30 mA", spdac: "parafoudres AC du tableau", spdacin: "parafoudres AC d'entrée", djspd: "disjoncteurs de parafoudres", piq: "piquets de terre", borne: "borne de terre", tige: "paratonnerre", poie: "prise de terre du paratonnerre", acin: "raccordement entrée AC (disjoncteur + inverseur)" };
         for (const k in PROT)
             if (own(k) && D[k].q < D[k].qc)
                 ck("ko", `Protection : ${D[k].q} ${PROT[k]} au lieu de ${D[k].qc} requis → installation non protégée (sécurité des personnes et du matériel).`, k);
@@ -1801,18 +1801,12 @@ function unifilaireMobileSVG(R, S) {
     // coffret DC
     const yCD = yc + 78, xCD = 104, wCD = 150;
     let yy = yCD + 8;
-    if (R.STRMPPT >= 3) {
-        for (let k = 0; k < ns; k++) {
-            const x = xs0 + k * gx;
-            s += L(x, yCD - 4, x, yy, DC, 1.4) + fuse(x, yy, DC) + L(x, yy + 18, x, yy + 24, DC, 1.4);
-        }
-        yy += 24;
+    const pvBrk = S.protpv === "Disjoncteur DC";
+    for (let k = 0; k < ns; k++) {
+        const x = xs0 + k * gx;
+        s += L(x, yCD - 4, x, yy, DC, 1.4) + (pvBrk ? brk(x, yy, DC) + L(x, yy + 30, x, yy + 34, DC, 1.4) : L(x - 7, yy - 1, x - 2, yy + 5, DC, 1.1) + fuse(x, yy + 3, DC) + L(x, yy + 21, x, yy + 34, DC, 1.4));
     }
-    else
-        for (let k = 0; k < ns; k++) {
-            const x = xs0 + k * gx;
-            s += L(x, yCD - 4, x, yy, DC, 1.4);
-        }
+    yy += 34;
     s += L(xs0, yy, xs0 + gx * (ns - 1), yy, DC, 1.6);
     const xsw = 196;
     s += L(168, yy, 168, yy + 6, DC, 1.6) + L(168, yy + 6, xsw, yy + 6, DC, 1.6) + isect(xsw, yy + 6, DC);
@@ -1822,8 +1816,7 @@ function unifilaireMobileSVG(R, S) {
     s += `<rect x="${xCD}" y="${yCD}" width="${wCD}" height="${yCDend - yCD}" fill="none" stroke="${T}" stroke-width="1.3"/>`;
     s += call(8, yCD + 12, xCD, yCD + 12, "Coffret DC", { b: 1 }) + t(xsw + 8, yy + 20, "Interr.-sect.", { a: "start", fs: 7 }) + t(xsw + 8, yy + 29, "général DC", { a: "start", fs: 7 }) + t(xsw + 8, yy + 38, `${R.UCPV} V`, { a: "start", fs: 7, fill: MU });
     s += call(8, yy + 56, xsp - 6, yy + 30, `Parafoudre DC ${R.SPDDC12 ? "T1+T2" : "T2"}`) + t(8, yy + 66, `Ucpv ${R.UCPV} V`, { a: "start", fs: 7.5, fill: MU });
-    if (R.STRMPPT >= 3)
-        s += t(xCD + wCD - 3, yCD + 20, `gPV`, { a: "end", fs: 7, fill: MU }) + t(xCD + wCD - 3, yCD + 29, `${c2.fuse} A`, { a: "end", fs: 7, fill: MU });
+    s += t(xCD + wCD - 3, yCD + 14, pvBrk ? "Disj. DC 2P" : "Sect. porte-", { a: "end", fs: 7, b: 1 }) + t(xCD + wCD - 3, yCD + 23, pvBrk ? `${c2.fuse} A · ${R.UCPV} V` : `fusible gPV ${c2.fuse} A`, { a: "end", fs: 7, fill: MU }) + t(xCD + wCD - 3, yCD + 32, pvBrk ? "par string" : "par string (+ et –)", { a: "end", fs: 7, fill: MU });
     // câble principal PV
     y = yCDend;
     s += L(xsw, yy + 36, xsw, y + 14, DC, 1.8) + t(xsw + 6, y + 12, `câble principal PV`, { a: "start", fs: 7.5, fill: MU }) + t(xsw + 6, y + 21, `${c2.sec} mm² · ${S.lpv} m`, { a: "start", fs: 7.5, fill: MU });
@@ -3247,7 +3240,7 @@ function vFormules(R, S) {
     s.push(fxSec("7. Régulation MPPT", R.ISVIC ? `${R.NMPPT} × ${esc(R.MPPTSEL)}` : "intégrée à l'onduleur", [
         R.ISVIC ? fxRow("Nombre de régulateurs", "N_MPPT = max(⌈P_inst / P_max MPPT⌉ ; ⌈N_strings / strings max par MPPT⌉)", `max(⌈${f(R.PPVINST)} / ${f(R.MPPTP)}⌉ ; ⌈${R.NSTR} / ${f(Math.floor(R.MPPTISC / M.isc))}⌉)`, `${R.NMPPT} × ${esc(R.MPPTSEL)}`)
             : fxRow("Entrées MPPT de l'onduleur", "N_MPPT = max(⌈N_strings / strings max par entrée⌉)", `${R.NSTR} strings · Isc entrée ${f(R.MPPTISC)} A / Isc module ${f(M.isc, 2)} A`, `${R.NMPPT} entrée(s) MPPT`),
-        fxRow("Strings par MPPT", "N_strings / N_MPPT", `⌈${R.NSTR} / ${R.NMPPT}⌉`, `${R.STRMPPT}`, R.STRMPPT >= 3 ? "3 strings ou plus en parallèle : fusibles gPV obligatoires" : "moins de 3 strings : fusibles gPV non obligatoires"),
+        fxRow("Strings par MPPT", "N_strings / N_MPPT", `⌈${R.NSTR} / ${R.NMPPT}⌉`, `${R.STRMPPT}`, (R.STRMPPT >= 3 ? "3 strings ou plus en parallèle : protection obligatoire" : "moins de 3 strings : protection non obligatoire par la norme") + " – MUPGLOBAL prévoit toujours " + (S.protpv === "Disjoncteur DC" ? "un disjoncteur DC 2P" : "un sectionneur porte-fusible gPV (+ et –)") + " par string dans le coffret DC"),
         fxRow("Courant de charge solaire", R.ISVIC ? "I_charge = N_MPPT × I_max MPPT" : "I_charge = min(N × I_max onduleur ; P_inst × η_MPPT / V)", R.ISVIC ? `${R.NMPPT} × ${f(R.MPPTI)}` : `min(${R.NINV} × ${f(R.MPPTI)} ; ${f(R.PPVINST)} × ${f(S.etamppt, 2)} / ${R.VSYS})`, `${f(R.IMPPTTOT)} A`),
     ]));
     // 8. batteries
@@ -3269,7 +3262,7 @@ function vFormules(R, S) {
     s.push(fxSec("9. Sections de câbles et fusibles", `ρ = ${f(S.rho, 4)} Ω·mm²/m`, R.cables.filter((c) => c.n > 0).map((c) => {
         var _a, _b, _c;
         const i = R.cables.indexOf(c), G = 2 * S.rho * c.L * c.I / (du[i] * c.U);
-        return fxRow(c.nom, "S = 2 × ρ × L × I / (ΔU × U) ; puis section dont le courant admissible ≥ 1,25 × I", `2 × ${f(S.rho, 4)} × ${f(c.L)} m × ${f(c.I, 1)} A / (${f(du[i] * 100, 1)} % × ${f(c.U, 1)} V) = ${f(G, 2)} mm²`, `${(_a = c.sec) !== null && _a !== void 0 ? _a : "—"} mm² · ${i === 0 && R.PBDJ ? "disjoncteur DC" : "fusible"} ${(_b = c.fuse) !== null && _b !== void 0 ? _b : "—"} A`, `ΔU réelle ${c.du === null ? "—" : f(c.du * 100, 2) + " %"} · longueur maximale ${(_c = c.Lmax) !== null && _c !== void 0 ? _c : "—"} m · ${i === 0 && R.PBDJ ? "disjoncteur" : "fusible"} = calibre normalisé ≥ 1,25 × I`);
+        return fxRow(c.nom, "S = 2 × ρ × L × I / (ΔU × U) ; puis section dont le courant admissible ≥ 1,25 × I", `2 × ${f(S.rho, 4)} × ${f(c.L)} m × ${f(c.I, 1)} A / (${f(du[i] * 100, 1)} % × ${f(c.U, 1)} V) = ${f(G, 2)} mm²`, `${(_a = c.sec) !== null && _a !== void 0 ? _a : "—"} mm² · ${i === 0 && R.PBDJ ? "disjoncteur DC" : i === 2 ? (S.protpv === "Disjoncteur DC" ? "disjoncteur DC" : "fusible gPV") : "fusible"} ${(_b = c.fuse) !== null && _b !== void 0 ? _b : "—"} A`, `ΔU réelle ${c.du === null ? "—" : f(c.du * 100, 2) + " %"} · longueur maximale ${(_c = c.Lmax) !== null && _c !== void 0 ? _c : "—"} m · ${i === 0 && R.PBDJ ? "disjoncteur" : "fusible"} = calibre normalisé ≥ 1,25 × I`);
     })));
     // 10. protections
     s.push(fxSec("10. Protections et terre", `Ucpv ${R.UCPV} V`, [
@@ -3654,7 +3647,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611090803", APP_VER = "1.6", APP_NOTES = ["Budget : quantités modifiables pour chaque matériel", "Alerte immédiate et points de vigilance en cas d'erreur ou de surdimensionnement (panneaux, régulateurs, onduleurs, batteries, protections), avec bouton « Corriger »", "Le visuel, le schéma unifilaire et la simulation suivent les quantités choisies", "Photos réelles des onduleurs Deye"];
+const APP_BUILD = "202611090824", APP_VER = "1.6", APP_NOTES = ["Coffret DC : protection de chaque string toujours prévue – sectionneur porte-fusible gPV ou disjoncteur DC au choix (Projet → Protections)", "Budget : quantités modifiables avec alerte immédiate et points de vigilance", "Le visuel, le schéma unifilaire et la simulation suivent les quantités choisies", "Photos réelles des onduleurs Deye"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -4464,7 +4457,7 @@ function vPar() {
     <div class="g3">${MONTHS.map((m, i) => fld("hsp." + i, m, { u: "h" })).join("")}</div><p class="small muted" style="margin:0">Heures de plein soleil (kWh/m²/j) sur plan incliné. Valeurs par défaut : Lubumbashi.</p>
     <div class="g3">${fld("hjour", "Durée du jour", { u: "h" })}${fld("tmin", "T° min", { u: "°C" })}${fld("tmax", "T° max", { u: "°C" })}</div>`)}
   ${sec("Câblage", `PV ${S.lpv} m`, `<div class="g2">${fld("lbat", "Batterie ↔ onduleur", { u: "m" })}${fld("lmppt", "MPPT ↔ batterie", { u: "m" })}${fld("lpv", "Champ PV ↔ MPPT", { u: "m" })}${fld("lac", "Onduleur ↔ tableau", { u: "m" })}${fld("l15", "Circuits 1,5 mm²", { u: "m" })}${fld("l25", "Circuits 2,5 mm²", { u: "m" })}</div><p class="small muted" style="margin:0">Longueurs aller. Les longueurs des circuits terminaux servent au métré du devis.</p>`)}
-  ${sec("Protections", (S.protbat === "Disjoncteur DC" ? "disj. DC batterie" : "fusible batterie") + " · " + (S.lps === "Oui" ? "paratonnerre" : "sans paratonnerre"), `${seg("protbat", "Protection des batteries", [["Fusible", "Fusible + sectionneur"], ["Disjoncteur DC", "Disjoncteur DC"]])}<p class="small muted" style="margin:-4px 0 0">${S.protbat === "Disjoncteur DC" ? `Disjoncteur DC ${R.cables && R.cables[0] ? R.cables[0].fuse : ""} A : coupe et sectionne, se réarme sans pièce de rechange. Il doit être prévu pour le courant continu, la tension du parc (${R.VSYS} V) et un pouvoir de coupure au moins égal au courant de court-circuit des batteries (souvent plusieurs kA en lithium).` : "Fusible (classe T, NH ou MEGA) + sectionneur : très fort pouvoir de coupure, peu coûteux ; à remplacer après un court-circuit."}</p>${fld("ng", "Densité de foudroiement Ng", { u: "/km²/an" })}${seg("isole", "Bâtiment isolé ou dominant", [["Oui", "Oui"], ["Non", "Non"]])}${seg("lps", "Paratonnerre prévu", [["Oui", "Oui"], ["Non", "Non"]])}<div class="g3">${fld("nid", "Différentiels", { u: "u" })}${fld("ndiv", "Disjoncteurs", { u: "u" })}${fld("npiq", "Piquets de terre", { u: "u" })}</div>`)}
+  ${sec("Protections", (S.protpv === "Disjoncteur DC" ? "disj. DC strings · " : "gPV strings · ") + (S.protbat === "Disjoncteur DC" ? "disj. DC batterie" : "fusible batterie") + " · " + (S.lps === "Oui" ? "paratonnerre" : "sans paratonnerre"), `${seg("protpv", "Protection des strings PV (coffret DC)", [["Fusible gPV", "Sectionneur porte-fusible gPV"], ["Disjoncteur DC", "Disjoncteur DC"]])}<p class="small muted" style="margin:-4px 0 4px">Une protection par string (+ et – pour les fusibles). Choisissez le disjoncteur DC si les fusibles gPV ne se trouvent pas sur le marché : calibre identique, tension assignée ≥ ${R.UCPV} V DC.</p>${seg("protbat", "Protection des batteries", [["Fusible", "Fusible + sectionneur"], ["Disjoncteur DC", "Disjoncteur DC"]])}<p class="small muted" style="margin:-4px 0 0">${S.protbat === "Disjoncteur DC" ? `Disjoncteur DC ${R.cables && R.cables[0] ? R.cables[0].fuse : ""} A : coupe et sectionne, se réarme sans pièce de rechange. Il doit être prévu pour le courant continu, la tension du parc (${R.VSYS} V) et un pouvoir de coupure au moins égal au courant de court-circuit des batteries (souvent plusieurs kA en lithium).` : "Fusible (classe T, NH ou MEGA) + sectionneur : très fort pouvoir de coupure, peu coûteux ; à remplacer après un court-circuit."}</p>${fld("ng", "Densité de foudroiement Ng", { u: "/km²/an" })}${seg("isole", "Bâtiment isolé ou dominant", [["Oui", "Oui"], ["Non", "Non"]])}${seg("lps", "Paratonnerre prévu", [["Oui", "Oui"], ["Non", "Non"]])}<div class="g3">${fld("nid", "Différentiels", { u: "u" })}${fld("ndiv", "Disjoncteurs", { u: "u" })}${fld("npiq", "Piquets de terre", { u: "u" })}</div>`)}
   ${sec("Réglages avancés", "rendements, marges", `<div class="g2">${fld("ks", "Simultanéité Ks")}${fld("cosphi", "cos φ")}${fld("etaond", "Rendement onduleur", { u: "%", pct: 1 })}${fld("etamppt", "Rendement MPPT", { u: "%", pct: 1 })}${fld("etacab", "Rendement câblage", { u: "%", pct: 1 })}${fld("kpvloss", "Facteur pertes PV", { u: "%", pct: 1 })}${fld("marge", "Marge de sécurité")}${fld("vac", "Tension AC", { u: "V" })}${fld("echauff", "Échauffement cellules", { u: "°C" })}${fld("ichlim", "Charge depuis AC", { u: "A" })}</div>`)}
   <div class="row"><button type="button" class="btn ghost" data-example>Recharger l'exemple</button></div>
   <p class="small muted">Programme de pré-dimensionnement. L'installation doit être validée par un installateur qualifié.</p>`;
