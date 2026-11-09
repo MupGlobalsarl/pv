@@ -171,6 +171,13 @@ main { padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px)) }
 .faq { border-bottom: 1px solid var(--line); padding: 6px 0 } .faq summary { cursor: pointer; font-weight: 700; font-size: 14px } .faq p { margin: 6px 0 2px; color: var(--muted) }
 .wres { display: grid; gap: 8px } .wres > div { display: flex; gap: 10px; align-items: flex-start } .wres > div > b { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #E8A317; color: #10202F; display: grid; place-items: center }
 .wres span { font-size: 13px; color: var(--muted) } .wres span b { display: block; color: var(--fg); font-size: 14.5px }
+.prodph .pi, .prodph svg { width: 64px; height: 76px; flex: none }
+.catg { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px }
+.catc { display: flex; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; min-width: 0 }
+.catimg { flex: none; width: 82px; display: grid; justify-items: center; gap: 3px } .catimg img, .catimg svg { width: 78px; height: 88px; object-fit: contain }
+.catimg span { font-size: 9.5px; color: #1E8449; text-align: center; line-height: 1.15 } .catimg span.ill { color: var(--muted) }
+.catt { display: grid; gap: 2px; min-width: 0; font-size: 13px } .catt > b { font-size: 13.5px; overflow-wrap: anywhere }
+.catf { display: flex; justify-content: space-between; align-items: center; margin-top: 4px } .catf b { color: #B8860B; font-size: 14px }
 .checks { display: grid; gap: 8px }
 .chk.fixable { cursor: pointer }
 .fixbtn { display: inline-block; margin: 6px 0 0; font: inherit; font-size: 12.5px; font-weight: 800; color: #fff; background: var(--brand-2, #1E7A46); border: 0; border-radius: 999px; padding: 5px 12px; cursor: pointer; vertical-align: middle }
@@ -451,6 +458,7 @@ th { color: var(--muted); font-weight: 600; font-size: 12px }
   <section class="view wrap" id="v-liens" hidden></section>
   <section class="view wrap" id="v-fiab" hidden></section>
   <section class="view wrap" id="v-licinfo" hidden></section>
+  <section class="view wrap" id="v-catal" hidden></section>
 </main>
 
 <nav class="nav" aria-label="Navigation principale"><div class="in" id="nav"></div></nav>
@@ -3852,6 +3860,90 @@ document.addEventListener("click", (e) => {
 }, true);
 document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest("#v-rapport a[href*='wa.me'], #v-rapport [data-print], #v-devis [data-print], #v-devis a[href*='wa.me']"); if (a && !(typeof DEMO !== "undefined" && DEMO))
     gMark("send"); }, true);
+/* MUPGLOBAL SARL – catalogue illustré : chaque matériel avec sa photo constructeur, ou une illustration aux couleurs de la marque */
+let CATF = { t: "hyb", q: "", b: "" };
+function matImg(type, ref, brand) {
+    const ph = typeof prodImg === "function" ? prodImg(ref) : null;
+    if (ph)
+        return { html: `<img src="${ph.src}" alt="" loading="lazy">`, kind: ph.approx ? "Photo du modèle voisin" : "Photo constructeur" };
+    return { html: productIcon(type, brand), kind: "Illustration" };
+}
+function catalItems() {
+    const f = (n) => String(n).replace(".", ",");
+    const T = {
+        hyb: () => CAT.hyb.map((h) => ({ ref: h[0], brand: h[1], type: "inverter", specs: `${f(h[4] / 1000)} kW · ${h[3]} V · ${h[2] === "Tri" ? "triphasé" : "monophasé"} · ${h[10]} MPPT ${h[8]}–${h[9]} V`, prix: h[13], pick: { marque: h[1], invForce: h[0], phases: h[2] === "Tri" ? "Triphasé" : "Monophasé" } })),
+        vic: () => CAT.inv.map((i) => ({ ref: i[0], brand: "Victron Energy", type: "inverter", specs: `${f(i[3] / 1000)} kW · ${i[1]} V · charge ${i[5]} A`, prix: i[6], pick: { marque: "Victron Energy", invForce: i[0] } })),
+        mppt: () => CAT.mppt.map((m) => ({ ref: m[0], brand: "Victron Energy", type: "mppt", specs: `${m[1]} V max · ${m[2]} A de charge · PV ${m[6] || m[5] || m[4]} W max`, prix: m[7], pick: { marque: "Victron Energy", mppt: m[0] } })),
+        bat: () => CAT.bat.map((b) => ({ ref: b[0], brand: b[8] || "Générique", type: "battery", specs: `${b[1]} · ${f(b[2])} V ${f(b[3])} Ah · ${f(Math.round(b[2] * b[3] / 100) / 10)} kWh · ${b[4]} A`, prix: b[5], pick: { battech: b[1], batSel: b[0] } })),
+        pv: () => PANELS.filter((x) => !/personnalisé/i.test(x[0])).map((p) => ({ ref: p[0], brand: p[1] === "—" ? "Générique" : p[1], type: "panel", specs: `${p[3]} Wc · ${p[2]} · Voc ${f(p[4])} V`, prix: p[12], pick: { modSel: p[0] } })),
+    };
+    return (T[CATF.t] || T.hyb)();
+}
+function vCatal() {
+    const tabs = [["hyb", "Onduleurs hybrides"], ["vic", "Onduleurs Victron"], ["mppt", "Régulateurs MPPT"], ["bat", "Batteries"], ["pv", "Panneaux"]];
+    const all = catalItems(), brands = [...new Set(all.map((x) => x.brand))].sort();
+    const q = CATF.q.trim().toLowerCase();
+    const list = all.filter((x) => (!CATF.b || x.brand === CATF.b) && (!q || (x.ref + " " + x.specs).toLowerCase().includes(q)));
+    const nPh = list.filter((x) => prodImg(x.ref)).length;
+    return `<div class="row" style="flex-wrap:wrap;gap:6px">${tabs.map(([k, l]) => `<button type="button" class="chip" data-catt="${k}" aria-pressed="${CATF.t === k}">${l}</button>`).join("")}</div>
+  <div class="g2" style="margin:10px 0"><div class="f"><label for="cat-q">Rechercher</label><input id="cat-q" type="search" value="${esc(CATF.q)}" placeholder="ex. 5 kW, SE-F12, 550 Wc"></div>
+  <div class="f"><label for="cat-b">Marque</label><select id="cat-b"><option value="">Toutes (${brands.length})</option>${brands.map((b) => `<option ${b === CATF.b ? "selected" : ""}>${esc(b)}</option>`).join("")}</select></div></div>
+  <p class="small muted" style="margin:0 0 8px">${list.length} matériel(s) · ${nPh} avec photo constructeur, les autres avec une illustration aux couleurs de la marque.</p>
+  <div class="catg">${list.map((x, i) => { const im = matImg(x.type, x.ref, x.brand); return `<div class="catc"><div class="catimg">${im.html}<span class="${im.kind === "Illustration" ? "ill" : ""}">${im.kind}</span></div><div class="catt"><b>${esc(x.ref)}</b><span class="small muted">${esc(x.brand)}</span><span class="small">${esc(x.specs)}</span><div class="catf"><b>${n0(x.prix)} USD</b><button type="button" class="chip" data-catpick="${i}">Choisir</button></div></div></div>`; }).join("")}</div>`;
+}
+document.addEventListener("click", (e) => {
+    const t = e.target.closest && e.target.closest("button");
+    if (!t)
+        return;
+    const d = t.dataset;
+    if ("catt" in d) {
+        CATF.t = d.catt;
+        CATF.b = "";
+        render();
+        e.stopPropagation();
+        return;
+    }
+    if ("catpick" in d) {
+        e.stopPropagation();
+        if (typeof DEMO !== "undefined" && DEMO) {
+            blocked();
+            return;
+        }
+        const q = CATF.q.trim().toLowerCase(), list = catalItems().filter((x) => (!CATF.b || x.brand === CATF.b) && (!q || (x.ref + " " + x.specs).toLowerCase().includes(q)));
+        const x = list[+d.catpick];
+        if (!x)
+            return;
+        Object.assign(S, x.pick);
+        if (x.pick.invForce !== undefined && x.pick.marque !== "Victron Energy")
+            S.mppt = "auto";
+        commit();
+        toast("Choisi pour ce projet : " + x.ref + (R.INVMODEL !== x.ref && x.pick.invForce ? " (remplacé : incompatible avec ce projet)" : ""));
+        return;
+    }
+}, true);
+document.addEventListener("input", (e) => { if (e.target.id === "cat-q") {
+    CATF.q = e.target.value;
+    const p = e.target.selectionStart;
+    render();
+    const n = document.getElementById("cat-q");
+    if (n) {
+        n.focus();
+        try {
+            n.setSelectionRange(p, p);
+        }
+        catch (er) { }
+    }
+} });
+document.addEventListener("change", (e) => { if (e.target.id === "cat-b") {
+    CATF.b = e.target.value;
+    render();
+} });
+function matCard(type, ref, brand) {
+    if (!ref)
+        return "";
+    const im = matImg(type, ref, brand);
+    return `<div class="prodph">${im.html.replace("<img ", '<img class="pi" ')}<div><b>${esc(ref)}</b><span>${im.kind === "Illustration" ? "Illustration (photo constructeur à venir)" : im.kind + " (" + (prodImg(ref) || {}).from + ")"}</span></div></div>`;
+}
 /* MUPGLOBAL SARL – alertes renforcées sur les quantités modifiées dans le Budget */
 function qIssues() { return (R.checks || []).filter((c) => String(c[2] || "").startsWith("@bud:") && c[0] !== "ok"); }
 function qBanner(place) {
@@ -4066,7 +4158,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611091410", APP_VER = "1.6", APP_NOTES = ["Batteries Deye SE-F5, SE-F5 Plus, Pro, Lite, SE-F12 et SE-F16 avec photos", "Gamme Deye Afrique : onduleurs hors réseau OG02LP1 (24 V et 48 V) et SUN-8K-SG05LP1", "Photo de la batterie choisie dans Projet et Budget", "Catalogue Deye 2026 et photos Felicity"];
+const APP_BUILD = "202611091418", APP_VER = "1.6", APP_NOTES = ["Catalogue du matériel illustré (Plus) : onduleurs, régulateurs, batteries et panneaux avec photo ou illustration, recherche et bouton « Choisir »", "Image du matériel choisi dans Projet et Budget", "Batteries Deye SE-F et gamme Deye Afrique", "Photos Deye et Felicity"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -4354,7 +4446,7 @@ if (!store.cur || !store.items[store.cur]) {
 let S = DEMO ? defaults() : migrate(store.items[store.cur].st), R = compute(S), view = "res";
 try {
     const h = location.hash.replace("#", "");
-    if (["res", "app", "par", "bud", "plus", "rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis", "liens", "fiab", "licinfo"].includes(h))
+    if (["res", "app", "par", "bud", "plus", "rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis", "liens", "fiab", "licinfo", "catal"].includes(h))
         view = h;
 }
 catch (e) { }
@@ -4381,7 +4473,7 @@ const CATIC = { "Climatisation": '<path d="M12 2v20M4.9 6l14.2 12M19.1 6L4.9 18"
 const catIcon = (c) => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CATIC[c] || CATIC.Autre}</svg>`;
 /* ---------- navigation ---------- */
 const TABS = [["res", "Résultats"], ["app", "Appareils"], ["par", "Projet"], ["bud", "Budget"], ["plus", "Plus"]];
-const SUBS = ["rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis", "liens", "fiab", "licinfo"], ALLV = ["res", "app", "par", "bud", "plus", ...SUBS];
+const SUBS = ["rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis", "liens", "fiab", "licinfo", "catal"], ALLV = ["res", "app", "par", "bud", "plus", ...SUBS];
 function nav() {
     $("#nav").innerHTML = TABS.map(([k, t]) => `<button type="button" data-tab="${k}" ${k === view || (k === "plus" && SUBS.includes(view)) ? 'aria-current="page"' : ""}><svg viewBox="0 0 44 26" aria-hidden="true"><g transform="translate(10 1)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</g></svg>${t}</button>`).join("");
 }
@@ -4863,14 +4955,14 @@ function vPar() {
   ${sec("Client et site", esc(S.projet.client || "—"), `${fld("projet.nom", "Nom du projet", { text: 1 })}${fld("siteSel", "Site (pays – ville)", { opts: [...SITES.map((s) => [s[0], s[0]]), ["", "Autre site (saisie libre)"]], hint: "54 pays africains : ensoleillement mensuel, températures et inclinaison conseillée remplis automatiquement (valeurs indicatives, modifiables)." })}${fld("projet.client", "Nom du client", { text: 1, ph: "ex. M. Kalala" })}<div class="g2">${fld("projet.tel", "Téléphone du client", { text: 1 })}${fld("projet.ref", "Référence", { text: 1 })}</div>${fld("projet.site", "Site", { text: 1 })}`, true)}
   ${sec("Installation", esc(S.marque), `${fld("marque", "Marque d'onduleur", { opts: brands, hint: "Victron : MultiPlus-II + régulateurs séparés. Autres marques (Deye, Growatt, Must, Felicity, SRNE, Sako, Hanchu ESS, Sunsynk, Luxpower, Solis, GoodWe, Inverex, Axpert, Easun, Mecer, DEV Solaire, Raggie) : onduleur hybride à MPPT intégrés." })}
     ${seg("phases", "Réseau à alimenter", [["Monophasé", "Monophasé"], ["Triphasé", "Triphasé"]])}
-    ${prodImg(R.INVMODEL) ? `<div class="prodph"><img src="${prodImg(R.INVMODEL).src}" alt="${esc(R.INVMODEL)}"><div><b>${esc(R.INVMODEL)}</b><span>${prodImg(R.INVMODEL).approx ? "Photo du modèle le plus proche de la gamme (" + prodImg(R.INVMODEL).from + ")" : "Photo constructeur (" + prodImg(R.INVMODEL).from + ")"}</span></div></div>` : ""}
+    ${matCard("inverter", R.INVMODEL, S.marque)}${R.ISVIC && R.NMPPT ? matCard("mppt", R.MPPTSEL, "Victron Energy") : ""}
     ${fld("invForce", "Modèle d'onduleur", { opts: [["", "Automatique (" + short(R.INVREC) + ")"], ...R.invList.map((m) => [m, m])] })}
     ${seg("vsys", "Tension du parc batteries", [["auto", "Auto"], [12, "12 V"], [24, "24 V"], [48, "48 V"]])}
     ${S.vsys === "auto" ? seg("vmeth", "Méthode de choix de la tension", [["both", "Norme + Victron"], ["norme", "Norme"], ["victron", "Victron"]]) : ""}
     <p class="small muted" style="margin:-4px 0 0">Norme (champ PV ${Math.round(R.PPVREQ)} Wc) : 12 V ≤ 500 Wc, 24 V ≤ 2 kWc, 48 V au-delà → <b>${R.VNORME} V</b>. Victron (onduleur ${Math.round(R.SREQ)} VA) : 12 V ≤ 1,6 kVA, 24 V ≤ 5 kVA, 48 V au-delà → <b>${R.VVIC} V</b> (${Math.round(R.IDCVIC)} A DC). Retenue : <b>${R.VSYS} V</b>${R.VFORCED ? ` – ${R.VBASE} V conseillés` : ""}.</p>
     ${R.ISVIC ? fld("mppt", "Régulateur MPPT Victron", { opts: [["auto", "Automatique (" + R.MPPTSEL.replace("SmartSolar ", "") + ")"], ...CAT.mppt.map((m) => [m[0], m[0] + ((R.mpptRank.find((x) => x.m === m[0]) || {}).ok ? "" : " – incompatible")])], hint: R.mpptReplaced ? "Modèle choisi incompatible : remplacé par " + R.MPPTSEL + "." : "" }) : ""}
     ${fld("battech", "Technologie de batteries", { opts: Object.keys(CAT.tech) })}
-    ${prodImg(R.BAT.ref) ? `<div class="prodph"><img src="${prodImg(R.BAT.ref).src}" alt="${esc(R.BAT.ref)}"><div><b>${esc(R.BAT.ref)}</b><span>${prodImg(R.BAT.ref).approx ? "Photo du modèle le plus proche (" : "Photo constructeur ("}${prodImg(R.BAT.ref).from})</span></div></div>` : ""}
+    ${matCard("battery", R.BAT.ref, (CAT.bat.find((b) => b[0] === R.BAT.ref) || [])[8] || S.marque)}
     ${fld("batSel", "Modèle de batterie", { opts: [["auto", "Automatique (le moins cher, toutes marques)"], ...[...new Set(CAT.bat.map((b) => b[8]))].filter((x) => x !== "Générique").sort().map((m) => ["auto:" + m, "Automatique – " + m]), ...CAT.bat.map((b) => [b[0], b[0]]), ["perso", "Autre batterie (saisie libre)"]], hint: "Retenue : " + R.NBAT + " × " + R.BAT.ref + (R.batReplaced ? " (choix incompatible remplacé)" : "") + " · tension unitaire " + n1(R.BAT.v) + " V · " + n0(R.BAT.ah) + " Ah · " + R.NSER + " en série × " + R.NPAR + " en parallèle" })}
     ${S.batSel === "perso" ? `<div class="g2">${fld("bat.v", "Tension", { u: "V" })}${fld("bat.ah", "Capacité", { u: "Ah" })}</div>${fld("bat.ref", "Référence de la batterie", { text: 1 })}` : ""}
     ${fld("auto", "Autonomie", { u: "j" })}
@@ -4879,6 +4971,7 @@ function vPar() {
     ${seg("groupe", "Groupe électrogène de secours", [["Non", "Non"], ["Oui", "Oui"]])}`, true)}
   ${sec("Champ PV et orientation", `${S.tilt}° · ${pc(R.FCHAMP)}`, `<div class="g3">${fld("tilt", "Inclinaison", { u: "°" })}${fld("az", "Écart / Nord", { u: "°" })}${fld("ombr", "Ombrage", { u: "%", pct: 1 })}</div>
     <p class="small muted" style="margin:0">Écart d'azimut : 0 = plein Nord (optimal dans l'hémisphère Sud), 90 = Est ou Ouest, 180 = plein Sud. Rendement d'orientation : <b>${pc(R.FORIENT)}</b>.</p>
+    ${matCard("panel", S.mod.ref, (PANELS.find((p) => p[0] === S.modSel) || [])[1] || "")}
     ${fld("modSel", "Module du catalogue", { opts: [["perso", "Saisie manuelle (valeurs ci-dessous)"], ...PANELS.filter((x) => !/personnalisé/i.test(x[0])).map((x) => [x[0], x[0] + " – " + x[3] + " Wc"])], hint: S.modSel && S.modSel !== "perso" ? "Caractéristiques reprises du catalogue (valeurs indicatives). Choisissez « Saisie manuelle » pour entrer votre fiche." : "28 modules : Jinko, LONGi, JA, Trina, Canadian, DEV Solaire, Raggie…" })}${fld("mod.ref", "Module", { text: 1 })}<div class="g3">${fld("mod.p", "Puissance", { u: "Wc" })}${fld("mod.voc", "Voc", { u: "V" })}${fld("mod.vmp", "Vmp", { u: "V" })}</div><div class="g3">${fld("mod.isc", "Isc", { u: "A" })}${fld("mod.imp", "Imp", { u: "A" })}${fld("nsForce", "Série forcée", { hint: "0 = auto" })}</div>`)}
   ${sec("Ensoleillement", `HSP ${n2(R.HSP)} h`, `${fld("base", "Base de calcul", { opts: [["min", "Mois le plus défavorable"], ["avg", "Moyenne annuelle"], ...MONTHS.map((m, i) => [String(i), m])] })}
     <div class="g3">${MONTHS.map((m, i) => fld("hsp." + i, m, { u: "h" })).join("")}</div><p class="small muted" style="margin:0">Heures de plein soleil (kWh/m²/j) sur plan incliné. Valeurs par défaut : Lubumbashi.</p>
@@ -4900,7 +4993,7 @@ function vBud() {
     <div class="card" style="padding:8px">${visuel(R, S, false)}<p class="small muted" style="margin:6px 4px 0">Visuel généré pour ce projet : ${R.NMOD} modules, ${R.ISVIC ? R.NMPPT + " régulateur(s), " : ""}${R.NINV} onduleur(s), ${R.NBAT} batterie(s).</p></div>
     <div class="h-sec"><h2>Devis</h2><span class="small muted">Modifiez quantités et prix</span></div>
     <div class="row"><button class="btn" type="button" data-tab="devis">Devis détaillé</button><button class="btn ghost" type="button" data-tab="formules">Formules de calcul</button></div>
-    ${lots.map((l) => `<details class="card"><summary>${esc(l.lot)}<span class="sv">${n0(l.m)} ${cur}</span></summary><div class="dbody lot">${r.devis.filter((d) => d.lot === l.lot).map((d) => `<div class="item ${d.q === 0 && !d.qown ? "zero" : ""}"><div class="ds ico">${d.k === "inv" && prodImg(R.INVMODEL) ? `<img class="pi" src="${prodImg(R.INVMODEL).src}" alt="" style="object-fit:contain">` : d.k === "bat" && prodImg(R.BAT.ref) ? `<img class="pi" src="${prodImg(R.BAT.ref).src}" alt="" style="object-fit:contain">` : productIcon(ITEM_ICON[d.k] || "box", S.marque)}<span>${d.q} × ${esc(d.des)}<small>${esc(d.ref)}</small>${d.qown ? `<small style="color:#E8A317;font-weight:700">Quantité modifiée (calculée : ${d.qc})</small>` : ""}</span></div><div class="m">${n0(d.m)}</div><div class="pu"><label for="qt-${d.k}">Quantité</label><input id="qt-${d.k}" data-qte="${esc(d.k)}" type="number" inputmode="numeric" step="1" min="0" value="${d.q}" style="max-width:90px">${d.qown ? `<button type="button" class="chip" data-qreset="${esc(d.k)}" style="padding:4px 10px">Quantité calculée (${d.qc})</button>` : ""}</div><div class="pu"><label for="pu-${d.k}">Prix unitaire</label><input id="pu-${d.k}" data-price="${esc(d.pk)}" type="number" inputmode="decimal" step="any" value="${d.pu}">${S.prix[d.pk] !== undefined && S.prix[d.pk] !== d.def ? `<button type="button" class="chip" data-reset="${esc(d.pk)}" style="padding:4px 10px">${d.fixed ? "Prix catalogue (" + n0(d.def) + ")" : "Prix indicatif"}</button>` : d.fixed ? `<span class="small muted">catalogue</span>` : ""}</div></div>`).join("")}</div></details>`).join("")}
+    ${lots.map((l) => `<details class="card"><summary>${esc(l.lot)}<span class="sv">${n0(l.m)} ${cur}</span></summary><div class="dbody lot">${r.devis.filter((d) => d.lot === l.lot).map((d) => `<div class="item ${d.q === 0 && !d.qown ? "zero" : ""}"><div class="ds ico">${d.k === "inv" && prodImg(R.INVMODEL) ? `<img class="pi" src="${prodImg(R.INVMODEL).src}" alt="" style="object-fit:contain">` : d.k === "bat" && prodImg(R.BAT.ref) ? `<img class="pi" src="${prodImg(R.BAT.ref).src}" alt="" style="object-fit:contain">` : d.k === "mod" && prodImg(d.ref) ? `<img class="pi" src="${prodImg(d.ref).src}" alt="" style="object-fit:contain">` : productIcon(ITEM_ICON[d.k] || "box", S.marque)}<span>${d.q} × ${esc(d.des)}<small>${esc(d.ref)}</small>${d.qown ? `<small style="color:#E8A317;font-weight:700">Quantité modifiée (calculée : ${d.qc})</small>` : ""}</span></div><div class="m">${n0(d.m)}</div><div class="pu"><label for="qt-${d.k}">Quantité</label><input id="qt-${d.k}" data-qte="${esc(d.k)}" type="number" inputmode="numeric" step="1" min="0" value="${d.q}" style="max-width:90px">${d.qown ? `<button type="button" class="chip" data-qreset="${esc(d.k)}" style="padding:4px 10px">Quantité calculée (${d.qc})</button>` : ""}</div><div class="pu"><label for="pu-${d.k}">Prix unitaire</label><input id="pu-${d.k}" data-price="${esc(d.pk)}" type="number" inputmode="decimal" step="any" value="${d.pu}">${S.prix[d.pk] !== undefined && S.prix[d.pk] !== d.def ? `<button type="button" class="chip" data-reset="${esc(d.pk)}" style="padding:4px 10px">${d.fixed ? "Prix catalogue (" + n0(d.def) + ")" : "Prix indicatif"}</button>` : d.fixed ? `<span class="small muted">catalogue</span>` : ""}</div></div>`).join("")}</div></details>`).join("")}
     <div class="card tot">
       ${kv("Total matériel", n0(r.TOTMAT) + " " + cur)}${kv(`Main d'œuvre, transport, imprévus (${pc(S.rmo + S.rtr + S.rimp)})`, n0(r.TOTMO) + " " + cur)}
       ${kv("Total hors taxes", n0(r.TOTHT) + " " + cur)}${kv("TVA " + pc(S.tva), n0(r.TVAAMT) + " " + cur)}
@@ -5594,6 +5687,7 @@ function vPlus() {
         ["devis", "Devis détaillé", "Devis numéroté par lot : quantités, prix unitaires, sous-totaux, HT, TVA, TTC, conditions et signatures. Imprimable et copiable pour WhatsApp.", "devis"],
         ["formules", "Formules de calcul", "Chaque partie du système expliquée : formule, application aux chiffres du projet et résultat (bilan, champ PV, onduleur, MPPT, batteries, câbles, protections, devis).", "formules"],
         ["updchk", "Vérifier les mises à jour", `Version installée : ${APP_VER} du ${updDate(APP_BUILD)}. L'application vous prévient automatiquement quand une nouvelle version est publiée.`, "updchk"],
+        ["catal", "Catalogue du matériel", "Onduleurs, régulateurs, batteries et panneaux avec photo ou illustration, caractéristiques et prix ; choisissez un matériel pour le projet.", "catal"],
         ["licinfo", "Licence, tarifs et assistance", "Prix des licences, ce qui est inclus, formation offerte, changement d'appareil, mises à jour et questions fréquentes.", "licinfo"],
         ["fiab", "Fiabilité des calculs", "La méthode utilisée, les hypothèses de ce projet, les contrôles automatiques et ce que vous devez encore vérifier sur le terrain.", "fiab"],
         ["liens", "Liens utiles", "Sites officiels pour le dimensionnement : ensoleillement de votre site (Global Solar Atlas, PVGIS, NASA POWER), calculateur MPPT et applications Victron, assistance.", "liens"]];
@@ -5638,7 +5732,7 @@ function render() {
         $("#v-" + k).hidden = k !== view;
     const el = $("#v-" + view);
     const empty = R.EAC + R.EDC <= 0 && ["res", "bud", "rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis"].includes(view);
-    el.innerHTML = empty ? vEmpty() : { res: vRes, app: vApp, par: vPar, bud: vBud, rapport: () => back("Rapport client") + vRapport(), plus: vPlus, uni: vUni, iso: vIso, pres: () => back("Présentation client") + vPres(R, S), sim: () => back("Simulateur") + vSim(R, S), live: () => back("Mon installation en direct") + vLive(R, S), formules: () => back("Formules de calcul") + vFormules(R, S), devis: () => back("Devis détaillé") + vDevisDet(R, S), liens: () => back("Liens utiles") + vLiens(R, S), fiab: () => back("Fiabilité des calculs") + vFiab(), licinfo: () => back("Licence et assistance") + vLicInfo() }[view]();
+    el.innerHTML = empty ? vEmpty() : { res: vRes, app: vApp, par: vPar, bud: vBud, rapport: () => back("Rapport client") + vRapport(), plus: vPlus, uni: vUni, iso: vIso, pres: () => back("Présentation client") + vPres(R, S), sim: () => back("Simulateur") + vSim(R, S), live: () => back("Mon installation en direct") + vLive(R, S), formules: () => back("Formules de calcul") + vFormules(R, S), devis: () => back("Devis détaillé") + vDevisDet(R, S), liens: () => back("Liens utiles") + vLiens(R, S), fiab: () => back("Fiabilité des calculs") + vFiab(), licinfo: () => back("Licence et assistance") + vLicInfo(), catal: () => back("Catalogue du matériel") + vCatal() }[view]();
     if (same) {
         el.querySelectorAll("details").forEach((d, i) => { if (open[i] !== undefined)
             d.open = open[i]; });
