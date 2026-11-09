@@ -2298,6 +2298,8 @@ function simSVG(R, S) {
     const ns = Math.min(R.NSTR, 6), T = "var(--fg)", MU = "var(--muted)";
     let s = `<defs><style>.fl{stroke-dasharray:4 10;animation:simflow 1s linear infinite}.fl.rev{animation-direction:reverse}.fl.off{stroke-dasharray:none;animation:none;opacity:.25}@keyframes simflow{to{stroke-dashoffset:-28}}@media (prefers-reduced-motion:reduce){.fl{animation:none}}</style></defs>`;
     const tx = (x, y, t, o = {}) => `<text x="${x}" y="${y}" font-size="${o.fs || 11}" text-anchor="${o.a || "middle"}" fill="${o.fill || T}" font-weight="${o.b ? 700 : 400}" ${o.id ? `id="${o.id}"` : ""}>${xesc(t)}</text>`;
+    const pimg = (ref, def, x, y, w, h) => { const src = ((typeof prodImg === "function" && prodImg(ref)) || {}).src || def || ""; return src ? `<image href="${src}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" data-cut="1" style="pointer-events:none"/>` : ""; };
+    const dz = (n) => ({ PV: typeof DZI_PV !== "undefined" ? DZI_PV : "", INV: typeof DZI_INV !== "undefined" ? DZI_INV : "", BAT: typeof DZI_BAT !== "undefined" ? DZI_BAT : "", MPPT: typeof DZI_MPPT !== "undefined" ? DZI_MPPT : "", GRID: typeof DZI_GRID !== "undefined" ? DZI_GRID : "" })[n];
     const hit = (id, x, y, w, h) => `<rect class="hit" data-sel="${id}" x="${x}" y="${y}" width="${w}" height="${h}" fill="transparent" style="cursor:pointer"/>`;
     s += `<g id="sim-sun"><circle cx="46" cy="40" r="18" fill="#F7C948"/></g>` + tx(80, 36, "Ensoleillement", { a: "start", fs: 10, fill: MU }) + tx(80, 52, "—", { a: "start", b: 1, id: "sv-g" });
     for (let i = 0; i < ns; i++) {
@@ -2314,12 +2316,17 @@ function simSVG(R, S) {
     s += `<polyline class="fl" id="sf-pv" points="300,206 360,206" fill="none" stroke="#C0392B" stroke-width="2.4"/>`;
     // MPPT
     s += `<rect x="360" y="170" width="110" height="74" rx="8" fill="var(--surface)" stroke="#1F618D" stroke-width="2"/>` + tx(415, 190, R.ISVIC ? `${R.NMPPT} × MPPT` : "MPPT intégrés", { b: 1 }) + tx(415, 210, "—", { id: "sv-ppv", b: 1, fs: 13 }) + tx(415, 230, "—", { id: "sv-mstate", fs: 10, fill: MU }) + hit("mppt", 360, 170, 110, 74);
+    // photos du matériel du projet
+    s += pimg(S.modSel, dz("PV"), 282, 104, 92, 62);
+    s += R.ISVIC ? pimg(R.MPPTSEL, dz("MPPT"), 384, 100, 76, 66) : "";
+    s += pimg(R.INVMODEL, dz("INV"), 545, 70, 80, 96);
+    s += pimg(R.BAT.ref, dz("BAT"), 516, 318, 96, 92);
     // bus et batteries
     s += `<polyline class="fl" id="sf-mb" points="415,244 415,300" fill="none" stroke="#C0392B" stroke-width="2.4"/>`;
     s += `<line x1="380" y1="300" x2="600" y2="300" stroke="${T}" stroke-width="4"/>` + tx(382, 293, `Bus DC ${R.VSYS} V`, { a: "start", fs: 9.5, fill: MU });
     s += `<polyline class="fl" id="sf-bat" points="440,300 440,330" fill="none" stroke="#C0392B" stroke-width="2.4"/>`;
     s += `<rect x="380" y="330" width="130" height="78" rx="8" fill="var(--surface)" stroke="#1E8449" stroke-width="2"/>` + `<rect x="392" y="372" width="106" height="14" rx="3" fill="var(--surface-2)"/><rect id="sv-socbar" x="392" y="372" width="60" height="14" rx="3" fill="#1E8449"/>` +
-        tx(445, 350, `${R.NBAT} batteries · ${fmtN(R.EBATINST, 1)} kWh`, { fs: 10, b: 1 }) + tx(445, 366, "—", { id: "sv-vbat", fs: 10 }) + tx(445, 402, "—", { id: "sv-soc", fs: 10, b: 1 }) + `<circle id="sv-cosse" cx="500" cy="340" r="5" fill="#2ECC71"/>` + hit("bat", 380, 330, 130, 78);
+        tx(445, 350, `${R.NBAT} batterie${R.NBAT > 1 ? "s" : ""} · ${fmtN(R.EBATINST, 1)} kWh`, { fs: 10, b: 1 }) + tx(445, 366, "—", { id: "sv-vbat", fs: 10 }) + tx(445, 402, "—", { id: "sv-soc", fs: 10, b: 1 }) + `<circle id="sv-cosse" cx="500" cy="340" r="5" fill="#2ECC71"/>` + hit("bat", 380, 330, 130, 78);
     // onduleur
     s += `<polyline class="fl" id="sf-inv" points="580,300 580,244" fill="none" stroke="#C0392B" stroke-width="2.4"/>`;
     s += `<rect x="530" y="170" width="110" height="74" rx="8" fill="var(--surface)" stroke="#0F2C4C" stroke-width="2"/>` + tx(585, 190, `${R.NINV} × onduleur`, { b: 1 }) + tx(585, 210, "—", { id: "sv-pac", b: 1, fs: 13 }) +
@@ -2327,11 +2334,11 @@ function simSVG(R, S) {
     // tableau AC + maison
     s += `<polyline class="fl" id="sf-ac" points="640,207 690,207" fill="none" stroke="#1F5F99" stroke-width="2.4"/>`;
     s += `<rect x="690" y="186" width="44" height="44" rx="6" fill="var(--surface)" stroke="#1F5F99" stroke-width="2"/>` + tx(712, 204, "ID", { fs: 10, b: 1 }) + `<rect id="sv-rcd" x="702" y="210" width="20" height="10" rx="2" fill="#2ECC71"/>` + hit("ac", 686, 182, 52, 52);
-    s += `<polyline class="fl" id="sf-house" points="734,207 760,207 760,150" fill="none" stroke="#1F5F99" stroke-width="2.4"/>`;
-    s += `<path d="M730 150 L760 122 L790 150 Z" fill="#B5523B"/><rect x="736" y="150" width="48" height="36" fill="#EFE2C8" stroke="#8C7B5E"/><rect id="sv-win" x="744" y="158" width="12" height="10" fill="#F7C948"/>` + tx(760, 110, "—", { id: "sv-load", fs: 10.5, b: 1 }) + hit("load", 728, 100, 66, 90);
+    s += `<polyline class="fl" id="sf-house" points="734,207 750,207 750,184" fill="none" stroke="#1F5F99" stroke-width="2.4"/>`;
+    s += `${typeof visMini === "function" ? visMini(R, S, 704, 120, 92, 64) : ""}<rect id="sv-win" x="704" y="120" width="0" height="0" fill="#F7C948"/>` + tx(760, 110, "—", { id: "sv-load", fs: 10.5, b: 1 }) + hit("load", 728, 100, 66, 90);
     // réseau
     if (S.mode === "Hybride")
-        s += `<polyline class="fl" id="sf-grid" points="760,380 620,380 620,244" fill="none" stroke="#6C3483" stroke-width="2" /><path d="M752 410 L760 360 L768 410 M748 376 H772 M750 392 H770" stroke="${T}" stroke-width="2" fill="none"/>` + tx(760, 352, "Réseau SNEL", { fs: 9.5, fill: MU }) + hit("grid", 740, 340, 44, 74);
+        s += `<polyline class="fl" id="sf-grid" points="760,380 620,380 620,244" fill="none" stroke="#6C3483" stroke-width="2" />` + (dz("GRID") ? `<image href="${dz("GRID")}" x="732" y="360" width="56" height="54" preserveAspectRatio="xMidYMid meet" style="pointer-events:none"/>` : `<path d="M752 410 L760 360 L768 410 M748 376 H772 M750 392 H770" stroke="${T}" stroke-width="2" fill="none"/>`) + tx(760, 352, "Réseau SNEL", { fs: 9.5, fill: MU }) + hit("grid", 740, 340, 44, 74);
     return `<svg id="simsvg" viewBox="0 0 800 420" role="img" aria-label="Schéma animé du système">${s}</svg>`;
 }
 function simMeasure(R, S, m, sel) {
@@ -2422,6 +2429,10 @@ function simUpdate(R, S, m) {
     const st = SIMST, $i = (id) => document.getElementById(id);
     if (!$i("simsvg"))
         return;
+    if (typeof dzCut === "function") {
+        document.querySelectorAll('#simsvg image[data-cut="1"]').forEach((el) => { el.dataset.cut = "2"; const s0 = el.getAttribute("href"); dzCut(s0).then((u) => { if (u !== s0 && el.isConnected)
+            el.setAttribute("href", u); }); });
+    }
     const hh = Math.floor(st.hour), mm = Math.floor((st.hour - hh) * 60);
     $i("sv-clock").textContent = `${hh} h ${String(mm).padStart(2, "0")}`;
     $i("sim-hourv").textContent = `${hh} h`;
@@ -4494,75 +4505,81 @@ function connSVG(R, S) {
     const cab = R.cables || [], cb = cab[0] || {}, cm = cab[1] || {}, cp = cab[2] || {}, ca = cab[3] || {};
     const f1 = (v) => String(Math.round(v * 10) / 10).replace(".", ","), xe = (t) => esc(String(t));
     const ph = (ref, def) => ((typeof prodImg === "function" && prodImg(ref)) || {}).src || def || "";
-    const DZ = { DZI_PV: typeof DZI_PV !== "undefined" ? DZI_PV : "", DZI_INV: typeof DZI_INV !== "undefined" ? DZI_INV : "", DZI_BAT: typeof DZI_BAT !== "undefined" ? DZI_BAT : "", DZI_MPPT: typeof DZI_MPPT !== "undefined" ? DZI_MPPT : "", DZI_GEN: typeof DZI_GEN !== "undefined" ? DZI_GEN : "", DZI_GRID: typeof DZI_GRID !== "undefined" ? DZI_GRID : "" };
-    const D = (n) => DZ[n] || "";
-    const img = (src, x, y, w, h, st) => (src ? `<image href="${src}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" data-cut="1"${st ? ` style="${st}"` : ""}/>` : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#DDE3E8"/>`);
-    const lab = (x, y, lines, a = "middle", bold = 0) => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="13" fill="#1B2733">${lines.map((t, i) => `<tspan x="${x}" dy="${i ? 16 : 0}"${i === 0 && bold !== -1 ? ' font-weight="700"' : ' fill="#4A5866"'}>${xe(t)}</tspan>`).join("")}</text>`;
-    const badge = (x, y, n) => (n > 1 ? `<g transform="translate(${x},${y})"><circle r="15" fill="#0B5A2E" stroke="#E8A317" stroke-width="2"/><text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">×${n}</text></g>` : "");
-    const W = (d, c, w = 4.5, dash) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`;
-    const RED = "#D62828", BLK = "#1F1F1F", AC = "#8B5A2B", COM = "#8A97A5";
-    const tag = (x, y, t, c = "#1B2733") => `<g transform="translate(${x},${y})"><rect x="${-(t.length * 3.6 + 8)}" y="-11" width="${t.length * 7.2 + 16}" height="20" rx="10" fill="#fff" stroke="${c}" stroke-width="1.2"/><text y="4" text-anchor="middle" font-size="11.5" font-weight="700" fill="${c}">${xe(t)}</text></g>`;
-    const fuse = (x, y, t) => `<g transform="translate(${x},${y})"><rect x="-7" y="-15" width="14" height="30" rx="3" fill="#fff" stroke="${BLK}" stroke-width="2"/><line x1="0" y1="-15" x2="0" y2="15" stroke="${BLK}" stroke-width="1.5"/></g>${t ? `<text x="${x + 14}" y="${y + 4}" font-size="11.5" fill="#4A5866">${xe(t)}</text>` : ""}`;
-    const acBox = (x, y) => `<g transform="translate(${x},${y})"><rect width="150" height="112" rx="6" fill="#fff" stroke="#E07B00" stroke-width="2"/><rect width="150" height="24" rx="6" fill="#E07B00"/><text x="75" y="17" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff">Tableau AC</text>
-    ${[0, 1, 2, 3].map((i) => `<rect x="${16 + i * 31}" y="40" width="22" height="34" rx="3" fill="#F3F5F7" stroke="#5E6B78"/><rect x="${23 + i * 31}" y="48" width="8" height="12" fill="#1B2733"/>`).join("")}
-    <text x="75" y="94" text-anchor="middle" font-size="11" fill="#4A5866">Disj. ${xe(R.DJAC || "")} A · diff. 30 mA</text><text x="75" y="106" text-anchor="middle" font-size="11" fill="#4A5866">parafoudre AC</text></g>`;
-    const gx = (x, y, t1, t2, side) => `<g transform="translate(${x},${y})"><rect width="96" height="64" rx="8" fill="#1B2733"/><rect x="7" y="7" width="82" height="42" rx="3" fill="#2E86C1"/><circle cx="30" cy="28" r="12" fill="none" stroke="#fff" stroke-width="2"/><path d="M52 20h28M52 28h22M52 36h26" stroke="#fff" stroke-width="2"/></g>${side ? lab(x + 106, y + 28, [t1, t2], "start") : lab(x + 48, y + 84, [t1, t2])}`;
-    const house = (x, y) => (typeof visMini === "function" ? visMini(R, S, x, y, 170, 100) : "");
-    const pvLbl = [`Champ PV ${f1(R.PPVINST / 1000)} kWc`, `${R.NMOD} × ${S.mod.p} Wc · ${R.NSTR} string${R.NSTR > 1 ? "s" : ""} de ${R.NS}`];
-    const batLbl = [`${R.NBAT} × ${short(R.BAT.ref)}`, `${f1(R.EBATINST)} kWh · ${R.VSYS} V · ${R.NSER || 1} série × ${R.NPAR || R.NBAT} parallèle`];
-    const pvS = ph(S.modSel, D("DZI_PV")), invS = ph(R.INVMODEL, D("DZI_INV")), batS = ph(R.BAT.ref, D("DZI_BAT")), mpS = ph(R.MPPTSEL, D("DZI_MPPT"));
+    const DZ = { PV: typeof DZI_PV !== "undefined" ? DZI_PV : "", INV: typeof DZI_INV !== "undefined" ? DZI_INV : "", BAT: typeof DZI_BAT !== "undefined" ? DZI_BAT : "", MPPT: typeof DZI_MPPT !== "undefined" ? DZI_MPPT : "", GEN: typeof DZI_GEN !== "undefined" ? DZI_GEN : "", GRID: typeof DZI_GRID !== "undefined" ? DZI_GRID : "" };
+    // --- vocabulaire graphique des schémas de câblage Victron : câbles épais à bords blancs, + rouge / – noir, AC gris gainé, terre verte, données fines ---
+    const RED = "#E2231A", NEG = "#1A1A1A", ACC = "#8E959C", PE = "#3DBE4F", DAT = "#1F78D1", INK = "#1B2733", MU = "#4A5866";
+    const cable = (d, c, w = 6) => `<path d="${d}" fill="none" stroke="#fff" stroke-width="${w + 3}" stroke-linejoin="round" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const acCab = (d) => `<path d="${d}" fill="none" stroke="#fff" stroke-width="10" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${ACC}" stroke-width="7" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="#C9CDD1" stroke-width="2" stroke-linejoin="round"/>`;
+    const data = (d, c = DAT) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`;
+    const earth = (d, x, y) => `<path d="${d}" fill="none" stroke="${PE}" stroke-width="3.5" stroke-linejoin="round"/><g transform="translate(${x},${y})" stroke="${PE}" stroke-width="3" stroke-linecap="round"><line x1="-11" x2="11"/><line x1="-7" x2="7" y1="5" y2="5"/><line x1="-3" x2="3" y1="10" y2="10"/></g>`;
+    const tag = (x, y, t, a = "start") => { const w = t.length * 5.6 + 10, x0 = a === "end" ? x - w : a === "middle" ? x - w / 2 : x; return `<g><rect x="${x0}" y="${y - 8}" width="${w}" height="15" rx="2" fill="#fff" stroke="${INK}" stroke-width=".8"/><text x="${x0 + w / 2}" y="${y + 3}" text-anchor="middle" font-size="9" font-weight="700" fill="${INK}">${xe(t)}</text></g>`; };
+    const img = (src, x, y, w, h, st) => (src ? `<image href="${src}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" data-cut="1"${st ? ` style="${st}"` : ""}/>` : "");
+    const cap = (x, y, lines, a = "middle") => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="12" fill="${INK}">${lines.map((t, i) => `<tspan x="${x}" dy="${i ? 15 : 0}"${i ? ` fill="${MU}" font-size="11"` : ' font-weight="700"'}>${xe(t)}</tspan>`).join("")}</text>`;
+    const badge = (x, y, n) => (n > 1 ? `<g transform="translate(${x},${y})"><circle r="13" fill="#0B5A2E" stroke="#E8A317" stroke-width="2"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">×${n}</text></g>` : "");
+    // tuile « source / charge » (bandeau orange, fond bleu clair) comme sur les schémas Victron
+    const tile = (x, y, w, h, title, inner) => `<g transform="translate(${x},${y})"><rect width="${w}" height="${h}" fill="#DCEFF7"/><rect width="${w}" height="22" fill="#E8761B"/><text x="${w / 2}" y="15.5" text-anchor="middle" font-size="11.5" font-weight="800" fill="#fff">${xe(title)}</text>${inner}</g>`;
+    // disjoncteur modulaire (DIN) posé sur un câble
+    const din = (x, y, t, n = 2) => `<g transform="translate(${x - n * 7},${y - 20})"><rect width="${n * 14}" height="40" rx="2" fill="#F4F5F6" stroke="#7C858E"/>${Array.from({ length: n }, (_, i) => `<rect x="${i * 14 + 4}" y="12" width="6" height="12" rx="1" fill="#2B2F33"/>`).join("")}<rect y="30" width="${n * 14}" height="10" fill="#E2E5E8"/></g>${t ? `<text x="${x + n * 7 + 5}" y="${y + 4}" font-size="10" fill="${MU}">${xe(t)}</text>` : ""}`;
+    const fuse = (x, y, t) => `<g transform="translate(${x},${y})"><rect x="-8" y="-16" width="16" height="32" rx="3" fill="#F2F2F2" stroke="#59616A"/><rect x="-5" y="-9" width="10" height="18" rx="2" fill="#E8A317"/></g>${t ? `<text x="${x + 13}" y="${y + 4}" font-size="10" fill="${MU}">${xe(t)}</text>` : ""}`;
+    const mainSw = (x, y) => `<g transform="translate(${x},${y})"><circle r="15" fill="#C62828" stroke="#7A1010" stroke-width="2"/><circle r="6" fill="#fff"/><rect x="-2.5" y="-14" width="5" height="12" rx="2" fill="#fff"/></g>`;
+    const shunt = (x, y) => `<g transform="translate(${x - 26},${y - 10})"><rect width="52" height="20" rx="3" fill="#2B2F33"/><rect x="3" y="4" width="46" height="12" rx="2" fill="#1E6FB8"/><text x="26" y="13.5" text-anchor="middle" font-size="7.5" font-weight="800" fill="#fff">SmartShunt</text></g>`;
+    const lynx = (x, y, w) => `<g transform="translate(${x},${y})"><rect width="${w}" height="56" rx="6" fill="#1E6FB8"/><rect x="8" y="10" width="${w - 16}" height="12" rx="2" fill="#C98A3B"/><rect x="8" y="34" width="${w - 16}" height="12" rx="2" fill="#8C8F93"/>${Array.from({ length: 4 }, (_, i) => `<rect x="${20 + i * (w - 40) / 3 - 7}" y="8" width="14" height="16" rx="2" fill="#E8A317" stroke="#7A5A10"/>`).join("")}<text x="${w - 10}" y="31" text-anchor="end" font-size="8" font-weight="800" fill="#fff">LYNX DISTRIBUTOR · BUS DC ${R.VSYS} V</text></g>`;
+    const gx = (x, y) => `<g transform="translate(${x},${y})"><rect width="86" height="56" rx="6" fill="#1B2733"/><rect x="6" y="6" width="74" height="36" rx="3" fill="#2E86C1"/><circle cx="26" cy="24" r="10" fill="none" stroke="#fff" stroke-width="2"/><path d="M44 17h28M44 24h20M44 31h24" stroke="#fff" stroke-width="2"/></g>`;
+    const pvS = ph(S.modSel, DZ.PV), invS = ph(R.INVMODEL, DZ.INV), batS = ph(R.BAT.ref, DZ.BAT), mpS = ph(R.MPPTSEL, DZ.MPPT);
+    const invName = `${R.NINV > 1 ? R.NINV + " × " : ""}${short(R.INVMODEL)}`;
     let s = "";
+    const IX = 200, IY = 250, IW = 150, IH = 196, icx = IX + IW / 2, BOT = IY + IH;
+    // ===== 1. sources en haut : champ PV (gauche), réseau et groupe (droite, côte à côte) =====
+    s += tile(10, 10, 230, 150, `Champ PV ${f1(R.PPVINST / 1000)} kWc`, img(pvS, 10, 28, 210, 96) + `<text x="115" y="140" text-anchor="middle" font-size="10.5" fill="${MU}">${xe(`${R.NMOD} × ${S.mod.p} Wc · ${R.NSTR} string${R.NSTR > 1 ? "s" : ""} de ${R.NS}`)}</text>`);
+    if (hyb)
+        s += tile(252, 10, 128, 100, "Réseau SNEL", `<image href="${DZ.GRID}" x="34" y="28" width="60" height="66" preserveAspectRatio="xMidYMid meet" style="filter:brightness(.25)"/>`)
+            + acCab(`M316 110 V${IY}`) + din(316, 176, `${R.DJACIN || ""} A`) + tag(322, IY - 14, vic ? "AC-in 1" : "GRID");
+    if (gen)
+        s += tile(386, 10, 126, 100, `Groupe ${R.GKVA} kVA`, img(DZ.GEN, 6, 30, 114, 64))
+            + acCab(`M449 110 V${IY + 46} H${IX + IW}`) + din(449, 176, "") + tag(IX + IW + 6, IY + 32, vic ? "AC-in 2" : "GEN");
+    // ===== 2. conversion =====
+    s += img(invS, IX, IY, IW, IH) + badge(IX + IW - 6, IY + 8, R.NINV);
+    {
+        const mdl = short(R.INVMODEL).replace(new RegExp("^" + String(S.marque).split(" ")[0] + "( ESS| Energy)? ?"), ""), brand = vic ? "Victron Energy" : S.marque;
+        s += `<text x="${IX + IW + 8}" y="${IY + 92}" font-size="12" font-weight="700" fill="${INK}">${xe(`${R.NINV > 1 ? R.NINV + " × " : ""}${brand}`)}</text>` + cap(IX + IW + 8, IY + 108, [mdl, vic ? "convertisseur / chargeur" : "onduleur hybride", vic ? "AC-in 1 / AC-in 2" : `${R.H && R.H.nmp ? R.H.nmp + " MPPT · " : ""}PV ${R.H ? R.H.mpmin + "–" + R.H.mpmax : ""} V`], "start");
+    }
+    // ===== 3. PV → protection → MPPT (Victron) ou entrée PV de l'onduleur (hybride) =====
     if (vic) {
-        // ---- montage Victron (cf. brochure Victron « Systèmes autonomes, de secours et îlotés ») ----
-        const yIn1 = 92, yIn2 = 132;
-        if (hyb)
-            s += W(`M150 ${yIn1} H470`, AC) + img(D("DZI_GRID"), 40, 30, 96, 80, "filter:brightness(.22)") + lab(88, 128, ["Réseau SNEL", `entrée AC ${R.DJACIN || ""} A`]);
-        if (gen)
-            s += W(`M150 ${hyb ? 200 : yIn1} H340 V${yIn2} H470`, AC) + img(D("DZI_GEN"), 22, hyb ? 160 : 40, 130, 80) + lab(88, hyb ? 262 : 140, [`Groupe ${R.GKVA} kVA`, "entrée AC de secours"]);
-        s += W(`M540 200 H700 V230 H760`, AC) + `<g transform="translate(760,180)">${acBox(0, 0)}</g>` + W(`M835 292 V330`, AC) + house(750, 330) + lab(835, 452, ["Maison", `${f1((R.EAC + R.EDC) / 1000)} kWh par jour`]);
-        s += img(invS, 420, 20, 160, 210) + badge(572, 30, R.NINV) + lab(500, 14, [`${R.NINV > 1 ? R.NINV + " × " : ""}${short(R.INVMODEL)}`]);
-        s += gx(640, 20, "Cerbo GX", "supervision VRM", 1) + W("M584 52 H640", COM, 2.5, "5 4");
-        // bus DC
-        s += W("M250 318 H700", RED, 6) + W("M250 334 H700", BLK, 6) + tag(380, 300, `Bus DC ${R.VSYS} V · Lynx`, BLK);
-        s += W("M486 230 V318", RED) + W("M514 230 V334", BLK) + fuse(486, 270, "") + lab(474, 274, [`${cb.fuse || ""} A`], "end", -1) + lab(526, 274, [`${cb.sec || "?"} mm²`], "start", -1);
-        // PV → MPPT → bus
-        s += img(pvS, 18, 330, 190, 120) + lab(113, 474, pvLbl);
-        s += W("M200 380 H250", RED) + W("M200 394 H250", BLK);
-        s += img(mpS, 240, 350, 130, 100) + badge(366, 356, R.NMPPT) + lab(305, 474, [`${R.NMPPT} × ${R.MPPTSEL.replace("SmartSolar ", "SmartSolar ")}`, `charge ${R.NMPPT * (R.MPPTI || 0)} A · ${cm.sec || "?"} mm²`]);
-        s += W("M290 350 V318", RED) + W("M318 350 V334", BLK) + fuse(290, 352 - 18, "");
-        s += W("M240 372 H226 V250 H612 V60 H640", COM, 2.5, "5 4");
-        // batteries + SmartShunt
-        s += W("M612 318 V500", RED) + W("M650 334 V400", BLK) + `<g transform="translate(632,400)"><rect width="48" height="30" rx="5" fill="#1E6FB8"/><text x="24" y="19" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff">SHUNT</text></g>` + W("M656 430 V500", BLK);
-        s += fuse(612, 372, "") + W("M680 415 H700 V84", COM, 2.5, "5 4");
-        s += img(batS, 520, 470, 220, 120) + badge(736, 480, R.NBAT) + lab(630, 612, batLbl);
+        s += cable(`M60 160 V${IY}`, RED, 4) + cable(`M84 160 V${IY}`, NEG, 4) + din(72, 200, "sectionneur PV", 2);
+        s += img(mpS, 10, IY, 124, 100) + badge(128, IY + 8, R.NMPPT) + cap(70, IY + 118, [`${R.NMPPT} × MPPT ${R.MPPTSEL.replace(/^SmartSolar MPPT /, "")}`, `charge ${R.NMPPT * (R.MPPTI || 0)} A`]);
     }
     else {
-        // ---- montage onduleur hybride tout-en-un (PV, batterie, réseau/groupe et sortie sur le même appareil) ----
-        s += img(pvS, 18, 30, 200, 128) + lab(118, 180, pvLbl);
-        s += W("M210 84 H300", RED) + W("M210 100 H300", BLK);
-        s += `<g transform="translate(300,56)"><rect width="104" height="74" rx="8" fill="#fff" stroke="${RED}" stroke-width="2"/><rect width="104" height="20" rx="8" fill="${RED}"/><text x="52" y="14" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">Coffret DC PV</text>
-      <text x="52" y="40" text-anchor="middle" font-size="10.5" fill="#1B2733">${xe(S.protpv === "Disjoncteur DC" ? "Disj. DC" : "gPV")} ${xe(cp.fuse || "")} A × ${R.NSTR}</text><text x="52" y="55" text-anchor="middle" font-size="10.5" fill="#1B2733">sectionneur</text><text x="52" y="68" text-anchor="middle" font-size="10.5" fill="#1B2733">parafoudre ${xe(R.UCPV || "")} V</text></g>`;
-        s += W("M404 84 H440 V124", RED) + W("M404 100 H428 V124", BLK) + lab(352, 150, [`${cp.sec || "?"} mm² · ${S.lpv} m`], "middle", -1);
-        s += img(invS, 420, 110, 170, 230) + badge(584, 122, R.NINV) + lab(408, 214, [`${R.NINV > 1 ? R.NINV + " × " : ""}${short(R.INVMODEL)}`, `${R.H && R.H.nmp ? R.H.nmp + " MPPT intégré" + (R.H.nmp > 1 ? "s" : "") : "MPPT intégré"}`, `PV ${R.H ? R.H.mpmin + "–" + R.H.mpmax : ""} V`], "end");
-        // réseau et groupe
-        if (hyb)
-            s += img(D("DZI_GRID"), 640, 8, 96, 80, "filter:brightness(.22)") + lab(688, 106, ["Réseau SNEL", "port GRID"]) + W("M640 50 H612 V150 H560", AC);
-        if (gen)
-            s += img(D("DZI_GEN"), 800, 8, 130, 80) + lab(865, 106, [`Groupe ${R.GKVA} kVA`, "port GEN"]) + W("M800 48 H760 V180 H560", AC);
-        // sortie AC
-        s += W("M560 262 H740", AC) + `<g transform="translate(740,210)">${acBox(0, 0)}</g>` + W("M815 322 V350", AC) + house(730, 350) + lab(815, 472, ["Maison", `${f1((R.EAC + R.EDC) / 1000)} kWh par jour`]);
-        // batteries
-        s += W("M490 330 V470", RED) + W("M520 330 V470", BLK) + fuse(490, 386, "") + lab(534, 390, [`${cb.fuse || ""} A · ${cb.sec || "?"} mm²`], "start", -1);
-        s += img(batS, 395, 430, 220, 130) + badge(612, 440, R.NBAT) + lab(505, 582, batLbl);
-        if (S.battech === "Lithium LiFePO4")
-            s += W("M420 490 H380 V318 H450", COM, 2.5, "5 4") + `<text x="372" y="470" text-anchor="end" font-size="11" fill="#4A5866">BMS CAN/RS485</text>`;
-        s += gx(150, 300, "Module Wi-Fi", `application ${String(S.marque).split(" ")[0]}`) + W("M246 332 H450", COM, 2.5, "5 4");
+        s += cable(`M84 160 V222 H${icx - 14} V${IY}`, RED, 4) + cable(`M100 160 V234 H${icx + 14} V${IY}`, NEG, 4) + din(92, 190, "", 2);
+        s += `<text x="112" y="186" font-size="10" fill="${MU}">${xe(`${S.protpv === "Disjoncteur DC" ? "Disj. DC" : "gPV"} ${cp.fuse || ""} A × ${R.NSTR}`)}</text><text x="112" y="199" font-size="10" fill="${MU}">${xe(`sectionneur · parafoudre ${R.UCPV || ""} V`)}</text><text x="112" y="212" font-size="10" fill="${MU}">${xe(`${cp.sec || "?"} mm² · ${S.lpv} m`)}</text>`;
     }
-    // légende
-    const lg = [[RED, "DC +"], [BLK, "DC –"], [AC, "AC"], [COM, "Communication"]];
-    s += `<g transform="translate(18,${vic ? 668 : 618})">${lg.map(([c, t], i) => `<g transform="translate(${i * 150},0)">${W("M0 0 H34", c, 4.5, c === COM ? "5 4" : "")}<text x="42" y="4.5" font-size="12.5" fill="#1B2733">${t}</text></g>`).join("")}</g>`;
-    const H = vic ? 686 : 636;
-    return `<svg class="connsvg" viewBox="0 0 980 ${H}" role="img" aria-label="Schéma de connexion du matériel de ce projet" style="background:#F4F4F0;border-radius:12px;font-family:var(--body);min-width:760px">${s}</svg>`;
+    // ===== 4. distribution DC et batteries (en bas à gauche) =====
+    const BY = 610;
+    if (vic) {
+        const LY = 486;
+        s += cable(`M134 ${IY + 40} H154 V${LY + 6}`, RED, 5) + cable(`M134 ${IY + 58} H172 V${LY + 50}`, NEG, 5) + fuse(154, IY + 140, "") + tag(160, IY + 168, `MPPT · ${cm.sec || "?"} mm²`);
+        s += cable(`M${icx - 20} ${BOT} V${LY + 6}`, RED, 8) + cable(`M${icx + 20} ${BOT} V${LY + 50}`, NEG, 8) + fuse(icx - 20, BOT + 20, "") + tag(icx - 32, BOT + 22, `${cb.fuse || ""} A · ${cb.sec || "?"} mm²`, "end");
+        s += lynx(10, LY, 340);
+        s += cable(`M60 ${LY + 6} V${BY}`, RED, 9) + cable(`M110 ${LY + 50} V${BY}`, NEG, 9) + fuse(60, LY + 96, "") + mainSw(60, LY + 120) + shunt(110, LY + 100) + `<text x="8" y="${LY + 96}" font-size="9.5" fill="${MU}">Class-T</text>`;
+        s += gx(372, 486) + `<text x="415" y="556" text-anchor="middle" font-size="11" font-weight="700" fill="${INK}">Cerbo GX</text>`
+            + data(`M${IX + IW} ${IY + 56} H354 V512 H372`) + data(`M136 ${LY + 100} H360 V514 H372`);
+    }
+    else {
+        s += cable(`M${icx - 20} ${BOT} V520 H80 V${BY}`, RED, 9) + cable(`M${icx + 20} ${BOT} V540 H120 V${BY}`, NEG, 9);
+        s += mainSw(icx - 20, BOT + 32) + fuse(80, 570, "") + tag(icx - 40, BOT + 34, `${cb.fuse || ""} A · ${cb.sec || "?"} mm²`, "end");
+        if (S.battech === "Lithium LiFePO4")
+            s += data(`M220 660 H300 V${BOT}`) + `<text x="306" y="560" font-size="10" fill="${MU}">BMS CAN/RS485</text>`;
+    }
+    s += img(batS, 20, BY, 200, 108) + badge(214, BY + 10, R.NBAT) + cap(14, BY + 128, [`${R.NBAT} × ${short(R.BAT.ref)}`, `${f1(R.EBATINST)} kWh · ${R.VSYS} V · ${R.NSER || 1} série × ${R.NPAR || R.NBAT} parallèle`], "start");
+    // ===== 5. sortie AC → disjoncteur + différentiel → maison (en bas à droite) =====
+    s += acCab(`M${IX + IW} ${BOT - 30} H470 V${BY}`) + din(470, vic ? 580 : 520, "", 3) + `<text x="444" y="${vic ? 576 : 516}" text-anchor="end" font-size="10" fill="${MU}">${xe(`${R.DJAC || ""} A`)}</text><text x="444" y="${vic ? 590 : 530}" text-anchor="end" font-size="10" fill="${MU}">diff. 30 mA</text>` + tag(IX + IW + 6, BOT - 44, vic ? "AC-out" : "LOAD");
+    s += tile(310, BY, 200, 130, "Charges AC 230 V", typeof visMini === "function" ? visMini(R, S, 6, 26, 188, 98) : "");
+    s += `<text x="410" y="${BY + 148}" text-anchor="middle" font-size="11" fill="${MU}">${xe(`${f1((R.EAC + R.EDC) / 1000)} kWh par jour`)}</text>`;
+    // ===== 6. terre =====
+    s += earth(`M${IX + IW - 14} ${BOT} V${BOT + 20}`, IX + IW - 14, BOT + 22);
+    const Y = 800;
+    const lg = [[RED, "DC +"], [NEG, "DC –"], [ACC, "AC"], [PE, "Terre"], [DAT, "Données"]];
+    s += `<g transform="translate(16,${Y - 8})">${lg.map(([c, t], i) => `<g transform="translate(${i * 100},0)"><line x1="0" x2="26" stroke="${c}" stroke-width="${c === DAT ? 2 : 5}"/><text x="32" y="4" font-size="11.5" fill="${INK}">${t}</text></g>`).join("")}</g>`;
+    return `<svg class="connsvg" viewBox="0 0 520 ${Y + 6}" role="img" aria-label="Schéma de câblage du matériel de ce projet" style="background:#fff;border-radius:12px;font-family:var(--body);width:100%;height:auto;display:block">${s}</svg>`;
 }
 function connCut() { if (typeof dzCut !== "function")
     return; document.querySelectorAll(".connsvg image[data-cut]").forEach((el) => { const s0 = el.getAttribute("href"); dzCut(s0).then((u) => { if (u !== s0 && el.isConnected)
@@ -4808,7 +4825,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611091812", APP_VER = "1.6", APP_NOTES = ["Mon installation en direct : réseau et groupe séparés, maison alimentée directement par l'onduleur", "Présentation client : schémas jour / nuit adaptés au matériel du projet, nouvelle animation des lignes", "Schéma de connexion du matériel en photos, inspiré des schémas Victron, adapté automatiquement à chaque projet", "Photos du matériel dans « Mon installation en direct » et dans la Présentation client"];
+const APP_BUILD = "202611091845", APP_VER = "1.6", APP_NOTES = ["Schéma de câblage dans le style Victron (Lynx, Class-T, SmartShunt, disjoncteurs, terre), adapté automatiquement à chaque projet", "Simulateur : photos du matériel du projet", "Mon installation en direct : réseau et groupe séparés, maison alimentée directement par l'onduleur", "Présentation client : schémas jour / nuit adaptés au matériel du projet, nouvelle animation des lignes"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
