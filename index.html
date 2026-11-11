@@ -4401,6 +4401,21 @@ document.addEventListener("click", (e) => {
 }, true);
 document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest("#v-rapport a[href*='wa.me'], #v-rapport [data-print], #v-devis [data-print], #v-devis a[href*='wa.me']"); if (a && !(typeof DEMO !== "undefined" && DEMO))
     gMark("send"); }, true);
+/* MUPGLOBAL SARL – version Play Store (application Android) : ouverte avec « ?play=1 » (ou depuis l'application com.mupglobal.*).
+   Règle Google « Paiements » : pas d'incitation à acheter la licence hors de Google Play dans l'application.
+   On garde l'essai gratuit et l'activation d'une clé déjà obtenue ; on retire les boutons et liens d'achat. */
+var PLAY = false;
+try {
+    if (/[?&]play=1(&|$)/.test(location.search) || /^android-app:\/\/com\.mupglobal\./.test(document.referrer || ""))
+        localStorage.setItem("mupglobal_pv_play", "1");
+    PLAY = localStorage.getItem("mupglobal_pv_play") === "1";
+}
+catch (e) {
+    PLAY = /[?&]play=1(&|$)/.test(location.search);
+}
+function playMsg(m) { return PLAY && m ? String(m).replace(/\s*Contactez MUPGLOBAL SARL pour la (renouveler|réactiver)\./g, "") : m; }
+if (PLAY && typeof OFFRE_ON !== "undefined")
+    OFFRE_ON = false;
 /* MUPGLOBAL SARL – sauvegarde complète : tous les projets, prix du marché local et coordonnées de l'émetteur dans un seul fichier. */
 const BKKEY = "mupglobal_pv_lastbackup";
 function bkLast() { try {
@@ -5397,7 +5412,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611111003", APP_VER = "1.6", APP_NOTES = ["Sauvegardes : nom avec date et heure, et restauration même si le fichier a été abîmé par le téléphone", "Sauvegarde complète : tous vos projets, prix locaux et coordonnées dans un seul fichier (WhatsApp, Google Drive), restauration sur un autre téléphone", "Bouton « Utiliser ma position (GPS) » : ensoleillement du lieu exact (NASA POWER) ; sans Internet, site le plus proche", "« Mon installation en direct » devient « Simulation de fonctionnement »"];
+const APP_BUILD = "202611111032", APP_VER = "1.6", APP_NOTES = ["Préparation de la version Play Store (application Android) et page de confidentialité", "Sauvegardes : nom avec date et heure, et restauration même si le fichier a été abîmé par le téléphone", "Sauvegarde complète : tous vos projets, prix locaux et coordonnées dans un seul fichier (WhatsApp, Google Drive), restauration sur un autre téléphone", "Bouton « Utiliser ma position (GPS) » : ensoleillement du lieu exact (NASA POWER) ; sans Internet, site le plus proche"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -7002,14 +7017,16 @@ document.addEventListener("change", (e) => {
 });
 function blocked() { const end = typeof trialEnded === "function" && trialEnded(); toast(end ? "Essai gratuit terminé (3 projets) : activez votre licence" : "Version démo : lancez l'essai gratuit ou activez votre licence"); setTimeout(() => openLicence(end ? `Essai gratuit terminé : vous avez utilisé vos ${TRIAL_MAX} projets d'essai sur cet appareil. Activez votre licence pour continuer ; vos projets d'essai seront conservés.` : ""), 600); }
 function openLicence(msg) {
+    if (typeof playMsg === "function")
+        msg = playMsg(msg);
     const wa = "https://wa.me/" + WA_NUM + "?text=" + encodeURIComponent(`Bonjour MUPGLOBAL SARL, je souhaite une licence du programme PV mobile. Code de mon appareil : ${fmtCode(DEVICE)}`);
     openSheet(`<div class="ph"><h2>Activer votre licence</h2>${LIC.ok ? '<button class="x" type="button" data-close aria-label="Fermer">×</button>' : ""}</div>
   <div style="display:grid;gap:12px">
     ${typeof IS_IOS !== "undefined" && IS_IOS && !isStandalone() && /^https:/.test(location.protocol) ? `<div class="chk ko"><span><b>iPhone :</b> installez d'abord l'icône (Partager → « Sur l'écran d'accueil »), puis ouvrez l'icône et activez la licence depuis l'icône.</span></div>` : ""}
-    <p style="margin:0">Chaque licence est liée à un appareil. Envoyez le code ci-dessous à ${COMPANY} : vous recevrez votre clé par WhatsApp.</p>
+    <p style="margin:0">${typeof PLAY !== "undefined" && PLAY ? "Chaque licence est liée à un appareil. Si vous avez une licence MUPGLOBAL PV, collez ci-dessous la clé reçue. Le code de cet appareil sert à établir la clé." : `Chaque licence est liée à un appareil. Envoyez le code ci-dessous à ${COMPANY} : vous recevrez votre clé par WhatsApp.`}</p>
     <div class="card" style="text-align:center;display:grid;gap:6px"><div class="eyebrow">Code de cet appareil</div><div style="font:700 28px/1.1 var(--display);letter-spacing:.08em;user-select:all">${fmtCode(DEVICE)}</div><button type="button" class="chip" data-copydev style="justify-self:center">Copier le code</button></div>
-    <a class="btn gold" href="${wa}" target="_blank" rel="noopener">Demander ma clé par WhatsApp</a>
-    <div class="small muted" style="text-align:center">ou au ${PHONE} · ${MAIL}</div>
+    ${typeof PLAY !== "undefined" && PLAY ? "" : `<a class="btn gold" href="${wa}" target="_blank" rel="noopener">Demander ma clé par WhatsApp</a>
+    <div class="small muted" style="text-align:center">ou au ${PHONE} · ${MAIL}</div>`}
     <form class="form" id="actf"><div class="f"><label for="lic-key">Clé de licence reçue</label><textarea id="lic-key" rows="4" spellcheck="false" autocomplete="off" placeholder="Collez ici la clé MUP-…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);font:16px/1.4 ui-monospace,Menlo,Consolas,monospace;word-break:break-all"></textarea></div>
     <div id="lic-msg" role="alert" ${msg ? "" : "hidden"} class="chk ko"><span>${esc(msg || "")}</span></div>
     <button class="btn wide" type="submit">Activer</button></form>
@@ -7023,12 +7040,12 @@ function activate() {
     const raw = $("#lic-key").value, r = checkKey(raw), m = $("#lic-msg");
     if (!r.ok) {
         m.hidden = false;
-        m.querySelector("span").textContent = r.why === "vide" ? "Collez la clé reçue de MUPGLOBAL SARL." : r.why;
+        m.querySelector("span").textContent = r.why === "vide" ? "Collez la clé reçue de MUPGLOBAL SARL." : typeof playMsg === "function" ? playMsg(r.why) : r.why;
         return;
     }
     if (RBLOCK) {
         m.hidden = false;
-        m.querySelector("span").textContent = RB_MSG;
+        m.querySelector("span").textContent = typeof playMsg === "function" ? playMsg(RB_MSG) : RB_MSG;
         return;
     }
     LIC = r;
@@ -7066,7 +7083,7 @@ function vPlus() {
         ["licinfo", "Licence, tarifs et assistance", "Prix des licences, ce qui est inclus, formation offerte, changement d'appareil, mises à jour et questions fréquentes.", "licinfo"],
         ["fiab", "Fiabilité des calculs", "La méthode utilisée, les hypothèses de ce projet, les contrôles automatiques et ce que vous devez encore vérifier sur le terrain.", "fiab"],
         ["liens", "Liens utiles", "Sites officiels pour le dimensionnement : ensoleillement de votre site (Global Solar Atlas, PVGIS, NASA POWER), calculateur MPPT et applications Victron, assistance.", "liens"]];
-    return T.filter((x) => OFFRE_ON || !["licinfo", "fiab"].includes(x[0])).map(([k, t, d]) => `<button type="button" class="tile2" ${k === "install" ? "data-install" : k === "updchk" ? "data-updchk" : k === "backup" ? "data-popen=\"bk\"" : `data-tab="${k}"`}${k === "install" && isStandalone() ? ' hidden' : ""}><span class="eyebrow">${k === "install" ? "application" : k === "sim" || k === "formules" ? "formation" : k === "liens" ? "ressources" : k === "pres" || k === "devis" ? "vente" : k === "live" ? "simulation" : "projet"}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("");
+    return T.filter((x) => (OFFRE_ON || !["licinfo", "fiab"].includes(x[0])) && !(typeof PLAY !== "undefined" && PLAY && x[0] === "install")).map(([k, t, d]) => `<button type="button" class="tile2" ${k === "install" ? "data-install" : k === "updchk" ? "data-updchk" : k === "backup" ? "data-popen=\"bk\"" : `data-tab="${k}"`}${k === "install" && isStandalone() ? ' hidden' : ""}><span class="eyebrow">${k === "install" ? "application" : k === "sim" || k === "formules" ? "formation" : k === "liens" ? "ressources" : k === "pres" || k === "devis" ? "vente" : k === "live" ? "simulation" : "projet"}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("");
 }
 function vUni() { return back("Schéma unifilaire") + `<div class="card" style="padding:8px">${unifilaireMobileSVG(R, S)}</div><p class="small muted">Schéma unifilaire en symboles normalisés, redessiné automatiquement pour ce projet à chaque modification (strings, protections, MPPT, onduleurs, batteries, tableau AC, terre).</p><details class="card" open><summary>Schéma de connexion du matériel<span class="sv">photos</span></summary><div class="dbody"><div class="tbl unibox">${connSVG(R, S)}</div><p class="small muted">Inspiré des schémas de système Victron Energy, redessiné automatiquement avec le matériel de ce projet (photos des catalogues constructeurs).</p></div></details>${(setTimeout(connCut, 0), "")}`; }
 function vIso() { return back("Visuel du projet") + `<div class="card" style="padding:8px">${visuel(R, S, true)}</div><p class="small muted">Modules, régulateurs MPPT, onduleurs et batteries redessinés automatiquement selon le dimensionnement de ce projet. Les repères correspondent à la liste du matériel.</p><div class="row"><button type="button" class="btn" data-print>Imprimer / PDF</button></div>`; }
