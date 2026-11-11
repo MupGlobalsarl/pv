@@ -452,6 +452,26 @@ th { color: var(--muted); font-weight: 600; font-size: 12px }
 .dz-flow.rev { animation-direction: reverse }
 .dz-sky { position: relative } .dz-clock { position: absolute; right: 6px; top: 0; font: 800 15px var(--display); color: #F5C542 }
 #pz-lvl { transition: y .4s, fill .4s } #pz-sunc { filter: drop-shadow(0 0 6px #F5B301); transition: opacity .4s }
+/* suivi des devis */
+.sv-kpi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px }
+.sv-kpi .card { display: grid; gap: 2px; padding: 12px }
+.sv-kpi b { font-size: 20px; line-height: 1.2; overflow-wrap: anywhere }
+.sv-kpi .sv-due { border-color: #F5B301; background: color-mix(in srgb, #F5B301 12%, var(--surface)) }
+.sv-chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 12px; scrollbar-width: none }
+.sv-chip { flex: 0 0 auto; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center }
+.sv-chip span { font-size: 12px; font-weight: 700; color: var(--muted) }
+.sv-chip.on { background: var(--brand); border-color: var(--brand); color: var(--on-brand) }
+.sv-chip.on span { color: var(--on-brand) }
+.sv-card { padding: 12px 14px }
+.sv-card.late { box-shadow: 0 0 0 2px #F5B301 inset, var(--shadow) }
+.sv-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start }
+.sv-top b { display: block; overflow-wrap: anywhere }
+.sv-amt { text-align: right; font-weight: 700; white-space: nowrap; display: grid }
+.sv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px }
+.sv-grid label { display: grid; gap: 4px; color: var(--muted) }
+.sv-grid select, .sv-grid input, .sv-note { font: inherit; font-size: 15px; color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; width: 100%; min-width: 0 }
+.sv-grid input:disabled { opacity: .5 }
+.sv-note { margin-top: 8px }
 </style>
 
 <header class="top">
@@ -481,6 +501,7 @@ th { color: var(--muted); font-weight: 600; font-size: 12px }
   <section class="view wrap" id="v-pres" hidden></section>
   <section class="view wrap two" id="v-sim" hidden></section>
   <section class="view wrap" id="v-live" hidden></section>
+  <section class="view wrap" id="v-suivi" hidden></section>
   <section class="view wrap" id="v-formules" hidden></section>
   <section class="view wrap" id="v-devis" hidden></section>
   <section class="view wrap" id="v-liens" hidden></section>
@@ -4616,6 +4637,220 @@ document.addEventListener("click", (e) => {
     setTimeout(() => { const b = document.querySelector("[data-bkall]"); if (b)
         b.closest(".card").scrollIntoView({ behavior: "smooth", block: "center" }); }, 120);
 }, true);
+/* MUPGLOBAL SARL – suivi des devis : étape de chaque projet, date de relance, message WhatsApp de relance.
+   Le suivi est gardé dans le projet (st.suivi) : il part avec la sauvegarde complète et la sauvegarde d'un projet. */
+const SUIVI_ST = [
+    ["brouillon", "Brouillon", "#7a8a80"],
+    ["envoye", "Devis envoyé", "#1f6fb2"],
+    ["discussion", "En discussion", "#b7791f"],
+    ["accepte", "Accepté", "#14783f"],
+    ["installe", "Installé", "#0b5a2e"],
+    ["perdu", "Perdu", "#b42318"],
+];
+const SUIVI_OUVERT = ["envoye", "discussion"];
+let SUIVI_F = "tous";
+function suiviOf(st) { const s = st && st.suivi; return s && SUIVI_ST.some((x) => x[0] === s.s) ? s : { s: "brouillon", hist: [], relance: "", note: "" }; }
+function suiviLbl(k) { const x = SUIVI_ST.find((y) => y[0] === k); return x ? x[1] : k; }
+function suiviCol(k) { const x = SUIVI_ST.find((y) => y[0] === k); return x ? x[2] : "#7a8a80"; }
+function suiviToday() { const d = new Date(), p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
+function suiviPlus(days) { const d = new Date(Date.now() + days * 864e5), p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
+function suiviDue(s) { return SUIVI_OUVERT.includes(s.s) && s.relance && s.relance <= suiviToday(); }
+function suiviFmtDate(v) { if (!v)
+    return ""; const [y, m, d] = v.split("-"); return `${d}/${m}/${y}`; }
+/* écrit le suivi dans le projet `id` (et dans S si c'est le projet ouvert) */
+function suiviSet(id, patch) {
+    const it = store.items[id];
+    if (!it)
+        return;
+    const cur = Object.assign({}, suiviOf(it.st));
+    cur.hist = (cur.hist || []).slice();
+    if (patch.s && patch.s !== cur.s) {
+        cur.hist.push([Date.now(), patch.s]);
+        if (SUIVI_OUVERT.includes(patch.s) && !cur.relance && !("relance" in patch))
+            cur.relance = suiviPlus(3);
+        if (!SUIVI_OUVERT.includes(patch.s) && !("relance" in patch))
+            cur.relance = "";
+    }
+    Object.assign(cur, patch);
+    it.st.suivi = cur;
+    if (id === store.cur && typeof S !== "undefined")
+        S.suivi = cur;
+    persist();
+}
+function suiviRows() {
+    return Object.keys(store.items).map((id) => {
+        const it = store.items[id], st = it.st;
+        let tot = 0, kwc = 0, ok = false;
+        try {
+            const rr = compute(migrate(JSON.parse(JSON.stringify(st))));
+            ok = rr.EAC + rr.EDC > 0;
+            tot = ok ? rr.TOTTTC : 0;
+            kwc = ok ? rr.PPVINST / 1000 : 0;
+        }
+        catch (e) { }
+        return { id, st, t: it.t, s: suiviOf(st), tot, kwc, ok, dev: st.devise || "USD" };
+    });
+}
+function suiviTel(t) {
+    let d = String(t || "").replace(/[^\d+]/g, "");
+    if (!d)
+        return "";
+    if (d.startsWith("+"))
+        return d.slice(1);
+    if (d.startsWith("00"))
+        return d.slice(2);
+    if (d.startsWith("0") && d.length === 10)
+        return "243" + d.slice(1);
+    if (d.length === 9)
+        return "243" + d;
+    return d;
+}
+function suiviMsg(r) {
+    const p = r.st.projet || {}, who = p.client ? `Bonjour ${p.client},` : "Bonjour,";
+    const what = `devis${p.ref ? " " + p.ref : ""} de votre installation solaire${r.kwc ? ` de ${n1(r.kwc)} kWc` : ""}${r.tot ? ` (${n0(r.tot)} ${r.dev})` : ""}`;
+    const sign = typeof emName === "function" && typeof emOk === "function" && emOk() ? "\n\n" + emName() : "";
+    return r.s.s === "accepte"
+        ? `${who} merci pour votre accord sur le ${what}. Je vous propose de fixer ensemble la date de l'installation : quel jour vous convient ?${sign}`
+        : `${who} je reviens vers vous au sujet du ${what}. Avez-vous pu l'étudier ? Je reste disponible pour toute question ou pour ajuster le projet.${sign}`;
+}
+function vSuivi() {
+    const rows = suiviRows(), cnt = {}, sum = {};
+    for (const [k] of SUIVI_ST) {
+        cnt[k] = 0;
+        sum[k] = 0;
+    }
+    const devs = new Set(rows.filter((r) => r.ok).map((r) => r.dev)), dev = devs.size === 1 ? [...devs][0] : "";
+    for (const r of rows) {
+        cnt[r.s.s]++;
+        sum[r.s.s] += r.tot;
+    }
+    const due = rows.filter((r) => suiviDue(r.s)).sort((a, b) => a.s.relance.localeCompare(b.s.relance));
+    const ouvert = sum.envoye + sum.discussion, gagne = sum.accepte + sum.installe;
+    const decides = cnt.accepte + cnt.installe + cnt.perdu, taux = decides ? Math.round((cnt.accepte + cnt.installe) / decides * 100) : null;
+    const money = (v) => dev ? `${n0(v)} ${esc(dev)}` : `${n0(v)}`;
+    const list = rows.filter((r) => SUIVI_F === "tous" ? true : SUIVI_F === "relance" ? suiviDue(r.s) : r.s.s === SUIVI_F)
+        .sort((a, b) => (suiviDue(b.s) - suiviDue(a.s)) || (SUIVI_ST.findIndex((x) => x[0] === a.s.s) - SUIVI_ST.findIndex((x) => x[0] === b.s.s)) || b.t - a.t);
+    const chip = (k, t, n) => `<button type="button" class="sv-chip${SUIVI_F === k ? " on" : ""}" data-sfil="${k}">${t}<span>${n}</span></button>`;
+    const card = (r) => {
+        const p = r.st.projet || {}, tel = suiviTel(p.tel), late = suiviDue(r.s);
+        const last = (r.s.hist || []).slice(-1)[0];
+        return `<div class="card sv-card${late ? " late" : ""}" data-sid="${r.id}" style="border-left:5px solid ${suiviCol(r.s.s)}">
+      <div class="sv-top"><div style="min-width:0"><b>${esc(p.client || p.nom || "Projet sans nom")}</b><div class="small muted">${esc(p.client ? p.nom || "" : "")}${p.ref ? " · " + esc(p.ref) : ""}</div></div>
+      <div class="sv-amt">${r.ok ? `${n0(r.tot)} ${esc(r.dev)}<span class="small muted">${n1(r.kwc)} kWc</span>` : '<span class="small muted">aucun appareil</span>'}</div></div>
+      <div class="sv-grid">
+        <label class="small">Étape<select data-sst="${r.id}">${SUIVI_ST.map(([k, t]) => `<option value="${k}"${k === r.s.s ? " selected" : ""}>${t}</option>`).join("")}</select></label>
+        <label class="small">Relancer le<input type="date" data-srel="${r.id}" value="${esc(r.s.relance || "")}"${SUIVI_OUVERT.includes(r.s.s) ? "" : " disabled"}></label>
+      </div>
+      ${late ? `<div class="chk warn" style="margin:8px 0 0"><span>Relance prévue le ${suiviFmtDate(r.s.relance)}${r.s.relance < suiviToday() ? " : en retard" : " : aujourd'hui"}.</span></div>` : ""}
+      <input class="sv-note" type="text" data-snote="${r.id}" value="${esc(r.s.note || "")}" placeholder="Note (ex. attend le budget, rappeler le matin)" maxlength="160">
+      <div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap">
+        ${tel && (SUIVI_OUVERT.includes(r.s.s) || r.s.s === "accepte") ? `<a class="btn gold" style="flex:1 1 140px" href="https://wa.me/${tel}?text=${encodeURIComponent(suiviMsg(r))}" target="_blank" rel="noopener" data-swa="${r.id}">${r.s.s === "accepte" ? "Fixer l'installation" : "Relancer sur WhatsApp"}</a>` : ""}
+        ${!tel && SUIVI_OUVERT.includes(r.s.s) ? `<span class="small muted" style="flex:1 1 140px;align-self:center">Ajoutez le téléphone du client dans Projet pour relancer sur WhatsApp.</span>` : ""}
+        ${r.id === store.cur ? '<span class="tag" style="align-self:center">ouvert</span>' : `<button class="btn ghost" type="button" style="flex:0 1 auto" data-sopen="${r.id}">Ouvrir</button>`}
+      </div>
+      ${last ? `<div class="small muted" style="margin-top:6px">${suiviLbl(last[1])} depuis le ${new Date(last[0]).toLocaleDateString("fr-FR")}</div>` : ""}
+    </div>`;
+    };
+    return `<p class="small muted" style="margin:4px 0 12px">L'étape de chaque projet, du devis à l'installation. Elle est enregistrée dans le projet et part avec la sauvegarde.</p>
+  <div class="sv-kpi">
+    <div class="card"><span class="eyebrow">En cours</span><b>${money(ouvert)}</b><span class="small muted">${cnt.envoye + cnt.discussion} devis envoyé${cnt.envoye + cnt.discussion > 1 ? "s" : ""} ou en discussion</span></div>
+    <div class="card"><span class="eyebrow">Gagnés</span><b>${money(gagne)}</b><span class="small muted">${cnt.accepte} accepté${cnt.accepte > 1 ? "s" : ""} · ${cnt.installe} installé${cnt.installe > 1 ? "s" : ""}</span></div>
+    <div class="card"><span class="eyebrow">Taux de réussite</span><b>${taux == null ? "—" : taux + " %"}</b><span class="small muted">${decides ? `sur ${decides} devis décidé${decides > 1 ? "s" : ""}` : "aucun devis décidé"}</span></div>
+    <div class="card${due.length ? " sv-due" : ""}"><span class="eyebrow">À relancer</span><b>${due.length}</b><span class="small muted">${due.length ? "aujourd'hui ou en retard" : "rien pour l'instant"}</span></div>
+  </div>
+  ${!dev && devs.size > 1 ? `<p class="small muted">Montants en plusieurs devises (${[...devs].map(esc).join(", ")}) : les totaux additionnent les chiffres tels quels.</p>` : ""}
+  <div class="sv-chips">${chip("tous", "Tous", rows.length)}${due.length ? chip("relance", "À relancer", due.length) : ""}${SUIVI_ST.map(([k, t]) => cnt[k] ? chip(k, t, cnt[k]) : "").join("")}</div>
+  <div style="display:grid;gap:10px">${list.length ? list.map(card).join("") : '<div class="card small muted">Aucun projet à cette étape.</div>'}</div>
+  <p class="small muted" style="margin-top:12px">Astuce : quand vous envoyez le rapport ou le devis par WhatsApp, un projet encore en « Brouillon » passe tout seul à « Devis envoyé », avec une relance prévue 3 jours après.</p>`;
+}
+function suiviDueCount() { try {
+    return Object.values(store.items).filter((it) => suiviDue(suiviOf(it.st))).length;
+}
+catch (e) {
+    return 0;
+} }
+function suiviGuard() { if (typeof DEMO !== "undefined" && DEMO) {
+    if (typeof blocked === "function")
+        blocked();
+    else
+        toast("Modifications désactivées en démonstration");
+    return false;
+} return true; }
+document.addEventListener("change", (e) => {
+    const t = e.target;
+    if (!t.closest || !t.closest("#v-suivi"))
+        return;
+    if (t.dataset.sst) {
+        if (!suiviGuard()) {
+            render();
+            return;
+        }
+        suiviSet(t.dataset.sst, { s: t.value });
+        toast(`Étape : ${suiviLbl(t.value)}`);
+        render();
+        return;
+    }
+    if (t.dataset.srel !== undefined && t.dataset.srel) {
+        if (!suiviGuard()) {
+            render();
+            return;
+        }
+        suiviSet(t.dataset.srel, { relance: t.value || "" });
+        render();
+        return;
+    }
+    if (t.dataset.snote) {
+        if (!suiviGuard()) {
+            render();
+            return;
+        }
+        suiviSet(t.dataset.snote, { note: t.value.slice(0, 160) });
+        toast("Note enregistrée");
+    }
+});
+document.addEventListener("click", (e) => {
+    const t = e.target.closest && e.target.closest("[data-sfil],[data-sopen],[data-swa],a[href^='https://wa.me/?text']");
+    if (!t)
+        return;
+    if (t.dataset.sfil) {
+        SUIVI_F = t.dataset.sfil;
+        render();
+        return;
+    }
+    if (t.dataset.sopen) {
+        e.preventDefault();
+        if (!suiviGuard())
+            return;
+        store.cur = t.dataset.sopen;
+        S = migrate(store.items[store.cur].st);
+        persist();
+        commit(false);
+        view = "res";
+        try {
+            history.replaceState(null, "", "#res");
+        }
+        catch (er) { }
+        render();
+        window.scrollTo(0, 0);
+        toast("Projet ouvert");
+        return;
+    }
+    if (t.dataset.swa) {
+        const it = store.items[t.dataset.swa];
+        if (it && suiviOf(it.st).s !== "accepte" && !(typeof DEMO !== "undefined" && DEMO)) {
+            suiviSet(t.dataset.swa, { relance: suiviPlus(4) });
+            setTimeout(render, 400);
+        }
+        return;
+    }
+    /* rapport / devis envoyé par WhatsApp depuis le projet ouvert → « Devis envoyé » */
+    if (typeof DEMO !== "undefined" && DEMO)
+        return;
+    if (["rapport", "devis"].includes(view) && store.items[store.cur] && suiviOf(store.items[store.cur].st).s === "brouillon" && R.EAC + R.EDC > 0) {
+        suiviSet(store.cur, { s: "envoye" });
+        setTimeout(() => toast("Suivi des devis : projet passé à « Devis envoyé »"), 300);
+    }
+}, true);
 /* MUPGLOBAL SARL – « Ma position » : position GPS du téléphone, ensoleillement du lieu exact.
    En ligne : NASA POWER (moyennes mensuelles 2001-2020, rayonnement horizontal, kWh/m²/j), converti sur le plan incliné
    (méthode isotrope de Liu-Jordan, fraction diffuse d'Erbs, albédo 0,2), panneaux orientés vers l'équateur.
@@ -5412,7 +5647,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611111032", APP_VER = "1.6", APP_NOTES = ["Préparation de la version Play Store (application Android) et page de confidentialité", "Sauvegardes : nom avec date et heure, et restauration même si le fichier a été abîmé par le téléphone", "Sauvegarde complète : tous vos projets, prix locaux et coordonnées dans un seul fichier (WhatsApp, Google Drive), restauration sur un autre téléphone", "Bouton « Utiliser ma position (GPS) » : ensoleillement du lieu exact (NASA POWER) ; sans Internet, site le plus proche"];
+const APP_BUILD = "202611111629", APP_VER = "1.6", APP_NOTES = ["Suivi des devis : étape de chaque projet, montants en cours et gagnés, taux de réussite, relances WhatsApp", "Préparation de la version Play Store (application Android) et page de confidentialité", "Sauvegardes : nom avec date et heure, et restauration même si le fichier a été abîmé par le téléphone", "Sauvegarde complète : tous vos projets, prix locaux et coordonnées dans un seul fichier (WhatsApp, Google Drive), restauration sur un autre téléphone"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -5700,7 +5935,7 @@ if (!store.cur || !store.items[store.cur]) {
 let S = DEMO ? defaults() : migrate(store.items[store.cur].st), R = compute(S), view = "res";
 try {
     const h = location.hash.replace("#", "");
-    if (["res", "app", "par", "bud", "plus", "rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis", "liens", "fiab", "licinfo", "catal"].includes(h))
+    if (["res", "app", "par", "bud", "plus", "rapport", "uni", "iso", "pres", "sim", "live", "suivi", "formules", "devis", "liens", "fiab", "licinfo", "catal"].includes(h))
         view = h;
 }
 catch (e) { }
@@ -5727,7 +5962,7 @@ const CATIC = { "Climatisation": '<path d="M12 2v20M4.9 6l14.2 12M19.1 6L4.9 18"
 const catIcon = (c) => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CATIC[c] || CATIC.Autre}</svg>`;
 /* ---------- navigation ---------- */
 const TABS = [["res", "Résultats"], ["app", "Appareils"], ["par", "Projet"], ["bud", "Budget"], ["plus", "Plus"]];
-const SUBS = ["rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis", "liens", "fiab", "licinfo", "catal"], ALLV = ["res", "app", "par", "bud", "plus", ...SUBS];
+const SUBS = ["rapport", "uni", "iso", "pres", "sim", "live", "suivi", "formules", "devis", "liens", "fiab", "licinfo", "catal"], ALLV = ["res", "app", "par", "bud", "plus", ...SUBS];
 function nav() {
     $("#nav").innerHTML = TABS.map(([k, t]) => `<button type="button" data-tab="${k}" ${k === view || (k === "plus" && SUBS.includes(view)) ? 'aria-current="page"' : ""}><svg viewBox="0 0 44 26" aria-hidden="true"><g transform="translate(10 1)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</g></svg>${t}</button>`).join("");
 }
@@ -7076,6 +7311,7 @@ function vPlus() {
     const T = [["install", "Installer l'application (icône)", "Mettre MUPGLOBAL PV sur l'écran d'accueil du téléphone, comme une vraie application, pour la retrouver facilement.", "install"], ["live", "Simulation de fonctionnement", "Ce que l'installation conçue produirait et consommerait heure par heure, avec la météo réelle du jour (en ligne) ou une journée type (hors ligne). Ce ne sont pas les mesures de l'onduleur.", "live"], ["pres", "Présentation client", "Plan commercial animé avec les chiffres du projet, à montrer au client.", "pres"], ["iso", "Visuel commercial du projet", "Illustration de la maison équipée : modules, régulateurs, onduleurs et batteries selon le dimensionnement.", "iso"],
         ["uni", "Schéma unifilaire", "Schéma redessiné automatiquement : strings, protections, sections, batteries.", "uni"], ["sim", "Simulateur et défauts", "Voir le système fonctionner, mesurer, injecter des défauts, s'entraîner au diagnostic.", "sim"], ["rapport", "Rapport client", "Fiche à envoyer par WhatsApp, avec la vue 3D et le schéma.", "rapport"],
         ["devis", "Devis détaillé", "Devis numéroté par lot : quantités, prix unitaires, sous-totaux, HT, TVA, TTC, conditions et signatures. Imprimable et copiable pour WhatsApp.", "devis"],
+        ["suivi", "Suivi des devis", typeof suiviDueCount === "function" && suiviDueCount() ? `${suiviDueCount()} devis à relancer. Étape de chaque projet, du devis envoyé à l'installation, et relance WhatsApp.` : "Étape de chaque projet, du devis envoyé à l'installation : montants en cours, taux de réussite, relances WhatsApp.", "suivi"],
         ["formules", "Formules de calcul", "Chaque partie du système expliquée : formule, application aux chiffres du projet et résultat (bilan, champ PV, onduleur, MPPT, batteries, câbles, protections, devis).", "formules"],
         ["backup", "Sauvegarder mes projets", "Tous vos projets, prix du marché local et coordonnées dans un seul fichier, à garder sur WhatsApp ou Google Drive ; restauration sur un autre téléphone.", "backup"],
         ["updchk", "Vérifier les mises à jour", `Version installée : ${APP_VER} du ${updDate(APP_BUILD)}. L'application vous prévient automatiquement quand une nouvelle version est publiée.`, "updchk"],
@@ -7083,7 +7319,7 @@ function vPlus() {
         ["licinfo", "Licence, tarifs et assistance", "Prix des licences, ce qui est inclus, formation offerte, changement d'appareil, mises à jour et questions fréquentes.", "licinfo"],
         ["fiab", "Fiabilité des calculs", "La méthode utilisée, les hypothèses de ce projet, les contrôles automatiques et ce que vous devez encore vérifier sur le terrain.", "fiab"],
         ["liens", "Liens utiles", "Sites officiels pour le dimensionnement : ensoleillement de votre site (Global Solar Atlas, PVGIS, NASA POWER), calculateur MPPT et applications Victron, assistance.", "liens"]];
-    return T.filter((x) => (OFFRE_ON || !["licinfo", "fiab"].includes(x[0])) && !(typeof PLAY !== "undefined" && PLAY && x[0] === "install")).map(([k, t, d]) => `<button type="button" class="tile2" ${k === "install" ? "data-install" : k === "updchk" ? "data-updchk" : k === "backup" ? "data-popen=\"bk\"" : `data-tab="${k}"`}${k === "install" && isStandalone() ? ' hidden' : ""}><span class="eyebrow">${k === "install" ? "application" : k === "sim" || k === "formules" ? "formation" : k === "liens" ? "ressources" : k === "pres" || k === "devis" ? "vente" : k === "live" ? "simulation" : "projet"}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("");
+    return T.filter((x) => (OFFRE_ON || !["licinfo", "fiab"].includes(x[0])) && !(typeof PLAY !== "undefined" && PLAY && x[0] === "install")).map(([k, t, d]) => `<button type="button" class="tile2" ${k === "install" ? "data-install" : k === "updchk" ? "data-updchk" : k === "backup" ? "data-popen=\"bk\"" : `data-tab="${k}"`}${k === "install" && isStandalone() ? ' hidden' : ""}><span class="eyebrow">${k === "install" ? "application" : k === "sim" || k === "formules" ? "formation" : k === "liens" ? "ressources" : k === "pres" || k === "devis" || k === "suivi" ? "vente" : k === "live" ? "simulation" : "projet"}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("");
 }
 function vUni() { return back("Schéma unifilaire") + `<div class="card" style="padding:8px">${unifilaireMobileSVG(R, S)}</div><p class="small muted">Schéma unifilaire en symboles normalisés, redessiné automatiquement pour ce projet à chaque modification (strings, protections, MPPT, onduleurs, batteries, tableau AC, terre).</p><details class="card" open><summary>Schéma de connexion du matériel<span class="sv">photos</span></summary><div class="dbody"><div class="tbl unibox">${connSVG(R, S)}</div><p class="small muted">Inspiré des schémas de système Victron Energy, redessiné automatiquement avec le matériel de ce projet (photos des catalogues constructeurs).</p></div></details>${(setTimeout(connCut, 0), "")}`; }
 function vIso() { return back("Visuel du projet") + `<div class="card" style="padding:8px">${visuel(R, S, true)}</div><p class="small muted">Modules, régulateurs MPPT, onduleurs et batteries redessinés automatiquement selon le dimensionnement de ce projet. Les repères correspondent à la liste du matériel.</p><div class="row"><button type="button" class="btn" data-print>Imprimer / PDF</button></div>`; }
@@ -7124,7 +7360,7 @@ function render() {
         $("#v-" + k).hidden = k !== view;
     const el = $("#v-" + view);
     const empty = R.EAC + R.EDC <= 0 && ["res", "bud", "rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis"].includes(view);
-    el.innerHTML = empty ? vEmpty() : { res: vRes, app: vApp, par: vPar, bud: vBud, rapport: () => back("Rapport client") + vRapport(), plus: vPlus, uni: vUni, iso: vIso, pres: () => back("Présentation client") + vPres(R, S), sim: () => back("Simulateur") + vSim(R, S), live: () => back("Simulation de fonctionnement") + vLive(R, S), formules: () => back("Formules de calcul") + vFormules(R, S), devis: () => back("Devis détaillé") + vDevisDet(R, S), liens: () => back("Liens utiles") + vLiens(R, S), fiab: () => back("Fiabilité des calculs") + vFiab(), licinfo: () => back("Licence et assistance") + vLicInfo(), catal: () => back("Catalogue du matériel") + vCatal() }[view]();
+    el.innerHTML = empty ? vEmpty() : { res: vRes, app: vApp, par: vPar, bud: vBud, rapport: () => back("Rapport client") + vRapport(), plus: vPlus, uni: vUni, iso: vIso, pres: () => back("Présentation client") + vPres(R, S), sim: () => back("Simulateur") + vSim(R, S), suivi: () => back("Suivi des devis") + vSuivi(), live: () => back("Simulation de fonctionnement") + vLive(R, S), formules: () => back("Formules de calcul") + vFormules(R, S), devis: () => back("Devis détaillé") + vDevisDet(R, S), liens: () => back("Liens utiles") + vLiens(R, S), fiab: () => back("Fiabilité des calculs") + vFiab(), licinfo: () => back("Licence et assistance") + vLicInfo(), catal: () => back("Catalogue du matériel") + vCatal() }[view]();
     if (same) {
         el.querySelectorAll("details").forEach((d, i) => { if (open[i] !== undefined)
             d.open = open[i]; });
