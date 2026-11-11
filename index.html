@@ -4421,7 +4421,36 @@ function bkInfo() {
     <p class="small muted" style="margin:0">Le fichier contient tous les projets, vos prix du marché local et vos coordonnées d'émetteur. Sur un autre téléphone, « Restaurer une sauvegarde » ajoute ces projets sans effacer ceux déjà présents.</p>
   </div>`;
 }
-function bkFileName() { return "MUPGLOBAL PV sauvegarde " + new Date().toISOString().slice(0, 10) + ".mupv.json"; }
+/* nom unique (date + heure) : certains téléphones réécrivent un fichier du même nom sans effacer la fin de l'ancien */
+function bkFileName() { const d = new Date(), p = (n) => String(n).padStart(2, "0"); return `MUPGLOBAL PV sauvegarde ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}h${p(d.getMinutes())}.mupv.json`; }
+/* lecture tolérante : ne garde que le premier objet JSON complet (ignore une fin de fichier abîmée) */
+function bkParse(txt) {
+    txt = String(txt || "").replace(/^\uFEFF/, "").trim();
+    try {
+        return JSON.parse(txt);
+    }
+    catch (e) { }
+    let depth = 0, str = false, esc = false;
+    for (let i = 0; i < txt.length; i++) {
+        const c = txt[i];
+        if (str) {
+            if (esc)
+                esc = false;
+            else if (c === "\\")
+                esc = true;
+            else if (c === '"')
+                str = false;
+            continue;
+        }
+        if (c === '"')
+            str = true;
+        else if (c === "{")
+            depth++;
+        else if (c === "}" && --depth === 0)
+            return JSON.parse(txt.slice(0, i + 1));
+    }
+    throw new Error("Fichier de sauvegarde incomplet ou abîmé.");
+}
 function bkData() {
     let prix = {}, em = {};
     try {
@@ -4550,7 +4579,7 @@ document.addEventListener("click", (e) => {
         if (!f)
             return;
         try {
-            const r = bkRestore(JSON.parse(await f.text()));
+            const r = bkRestore(bkParse(await f.text()));
             closeSheet();
             commit();
             toast(r.added ? `${r.added} projet${r.added > 1 ? "s" : ""} restauré${r.added > 1 ? "s" : ""}${r.same ? ` (${r.same} déjà présent${r.same > 1 ? "s" : ""})` : ""}` : "Ces projets sont déjà sur ce téléphone");
@@ -5368,7 +5397,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611110401", APP_VER = "1.6", APP_NOTES = ["Sauvegarde complète : tous vos projets, prix locaux et coordonnées dans un seul fichier (WhatsApp, Google Drive), restauration sur un autre téléphone", "Bouton « Utiliser ma position (GPS) » : ensoleillement du lieu exact (NASA POWER) ; sans Internet, site le plus proche", "« Mon installation en direct » devient « Simulation de fonctionnement »", "Photos des onduleurs SRNE (HESP, ASP, HF, HFP) ; caractéristiques du HESP48120U200-H corrigées", "Catalogue Raggie : 35 onduleurs hybrides, 36 batteries (lithium et gel) et 7 panneaux RG-M, avec photos"];
+const APP_BUILD = "202611111003", APP_VER = "1.6", APP_NOTES = ["Sauvegardes : nom avec date et heure, et restauration même si le fichier a été abîmé par le téléphone", "Sauvegarde complète : tous vos projets, prix locaux et coordonnées dans un seul fichier (WhatsApp, Google Drive), restauration sur un autre téléphone", "Bouton « Utiliser ma position (GPS) » : ensoleillement du lieu exact (NASA POWER) ; sans Internet, site le plus proche", "« Mon installation en direct » devient « Simulation de fonctionnement »"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -6460,7 +6489,7 @@ async function doInstall() {
   </div>`);
 }
 /* ---------- projets ---------- */
-function projFileName(st) { const p = st.projet || {}; const n = `PV ${p.client ? p.client + " - " : ""}${p.nom || "projet"} ${new Date().toISOString().slice(0, 10)}`; return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u2010-\u2015]/g, "-").replace(/[^\x20-\x7e]/g, "").replace(/[\\/:*?"<>|\n\r\t]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 90) + ".mupv.json"; }
+function projFileName(st) { const p = st.projet || {}; const n = `PV ${p.client ? p.client + " - " : ""}${p.nom || "projet"} ${((d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + " " + String(d.getHours()).padStart(2, "0") + "h" + String(d.getMinutes()).padStart(2, "0"))(new Date())}`; return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u2010-\u2015]/g, "-").replace(/[^\x20-\x7e]/g, "").replace(/[\\/:*?"<>|\n\r\t]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 90) + ".mupv.json"; }
 function downloadProject(st = S) {
     const blob = new Blob([JSON.stringify({ app: "MUPGLOBAL-PV", v: 1, saved: new Date().toISOString(), st }, null, 0)], { type: "application/json" });
     const a = document.createElement("a");
@@ -6703,7 +6732,15 @@ document.addEventListener("click", (e) => {
             if (!f)
                 return;
             try {
-                const o = JSON.parse(await f.text());
+                const o0 = typeof bkParse === "function" ? bkParse(await f.text()) : JSON.parse(await f.text());
+                if (o0 && o0.kind === "backup" && typeof bkRestore === "function") {
+                    const r = bkRestore(o0);
+                    closeSheet();
+                    commit();
+                    toast(r.added ? r.added + " projet(s) restauré(s)" : "Ces projets sont déjà sur ce téléphone");
+                    return;
+                }
+                const o = o0;
                 if (!o || o.app !== "MUPGLOBAL-PV" || !o.st || !Array.isArray(o.st.loads))
                     throw new Error("Ce fichier n'est pas un projet MUPGLOBAL.");
                 const id = uid();
