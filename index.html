@@ -2773,11 +2773,12 @@ function presBind(R, S) {
     stage.onpointerup = (e) => { if (x0 !== null && Math.abs(e.clientX - x0) > 40)
         go(PRES.i + (e.clientX < x0 ? 1 : -1)); x0 = null; };
 }
-/* MUPGLOBAL SARL – « Mon installation en direct » : fonctionnement du système conçu, heure par heure.
+/* MUPGLOBAL SARL – « Simulation de fonctionnement » (anciennement « Mon installation en direct ») : fonctionnement du système conçu, heure par heure.
    En ligne : ensoleillement réel du jour (Open-Meteo, mis en cache). Hors ligne : journée type du mois. */
 const SITE_LL = { "Saisie manuelle (votre site)": [-11.7, 27.5], "Afrique du Sud – Durban": [-29.86, 31.02], "Afrique du Sud – Johannesburg": [-26.2, 28.05], "Afrique du Sud – Le Cap": [-33.92, 18.42], "Algérie – Alger": [36.75, 3.06], "Algérie – Tamanrasset": [22.79, 5.52], "Angola – Huambo": [-12.77, 15.73], "Angola – Luanda": [-8.84, 13.23], "Botswana – Gaborone": [-24.65, 25.91], "Burkina Faso – Ouagadougou": [12.37, -1.52], "Burundi – Bujumbura": [-3.38, 29.36], "Burundi – Gitega": [-3.43, 29.92], "Bénin – Cotonou": [6.37, 2.39], "Bénin – Parakou": [9.34, 2.63], "Cameroun – Douala": [4.05, 9.7], "Cameroun – Garoua": [9.3, 13.4], "Cameroun – Yaoundé": [3.87, 11.52], "Cap-Vert – Praia": [14.93, -23.51], "Centrafrique – Bangui": [4.36, 18.56], "Comores – Moroni": [-11.7, 43.26], "Congo – Brazzaville": [-4.27, 15.28], "Congo – Pointe-Noire": [-4.78, 11.86], "Côte d'Ivoire – Abidjan": [5.36, -4.01], "Côte d'Ivoire – Korhogo": [9.46, -5.63], "Côte d'Ivoire – Yamoussoukro": [6.82, -5.28], "Djibouti – Djibouti": [11.59, 43.15], "Égypte – Assouan": [24.09, 32.9], "Égypte – Le Caire": [30.04, 31.24], "Érythrée – Asmara": [15.32, 38.93], "Eswatini – Mbabane": [-26.31, 31.14], "Éthiopie – Addis-Abeba": [9.03, 38.74], "Gabon – Franceville": [-1.63, 13.58], "Gabon – Libreville": [0.39, 9.45], "Gambie – Banjul": [13.45, -16.58], "Ghana – Accra": [5.6, -0.19], "Ghana – Tamale": [9.4, -0.84], "Guinée – Conakry": [9.64, -13.58], "Guinée équatoriale – Malabo": [3.75, 8.78], "Guinée-Bissau – Bissau": [11.86, -15.6], "Kenya – Lodwar": [3.12, 35.6], "Kenya – Mombasa": [-4.04, 39.67], "Kenya – Nairobi": [-1.29, 36.82], "Lesotho – Maseru": [-29.31, 27.48], "Liberia – Monrovia": [6.3, -10.8], "Libye – Sebha": [27.04, 14.43], "Libye – Tripoli": [32.89, 13.19], "Madagascar – Antananarivo": [-18.88, 47.51], "Madagascar – Toliara": [-23.35, 43.67], "Malawi – Blantyre": [-15.79, 35.01], "Malawi – Lilongwe": [-13.96, 33.79], "Mali – Bamako": [12.64, -8], "Mali – Tombouctou": [16.77, -3.01], "Maroc – Marrakech": [31.63, -8], "Maroc – Rabat": [34.02, -6.84], "Maurice – Port-Louis": [-20.16, 57.5], "Mauritanie – Nouakchott": [18.09, -15.98], "Mozambique – Maputo": [-25.97, 32.57], "Mozambique – Nampula": [-15.12, 39.27], "Mozambique – Tete": [-16.16, 33.59], "Namibie – Windhoek": [-22.56, 17.08], "Niger – Agadez": [16.97, 7.99], "Niger – Niamey": [13.51, 2.11], "Nigeria – Abuja": [9.06, 7.5], "Nigeria – Kano": [12, 8.52], "Nigeria – Lagos": [6.52, 3.38], "Nigeria – Port Harcourt": [4.82, 7.03], "Ouganda – Gulu": [2.78, 32.3], "Ouganda – Kampala": [0.35, 32.58], "RD Congo – Bandundu": [-3.31, 17.38], "RD Congo – Bukavu": [-2.51, 28.86], "RD Congo – Bunia": [1.56, 30.25], "RD Congo – Gemena": [3.25, 19.77], "RD Congo – Goma": [-1.68, 29.22], "RD Congo – Isiro": [2.77, 27.62], "RD Congo – Kalemie": [-5.95, 29.19], "RD Congo – Kananga": [-5.9, 22.42], "RD Congo – Kikwit": [-5.04, 18.82], "RD Congo – Kindu": [-2.95, 25.92], "RD Congo – Kinshasa": [-4.32, 15.31], "RD Congo – Kisangani": [0.52, 25.2], "RD Congo – Kolwezi": [-10.71, 25.47], "RD Congo – Likasi": [-10.98, 26.73], "RD Congo – Lubumbashi": [-11.66, 27.48], "RD Congo – Matadi": [-5.82, 13.45], "RD Congo – Mbandaka": [0.05, 18.26], "RD Congo – Mbuji-Mayi": [-6.14, 23.6], "RD Congo – Tshikapa": [-6.42, 20.79], "RD Congo – Uvira": [-3.4, 29.14], "Rwanda – Kigali": [-1.95, 30.06], "Seychelles – Victoria": [-4.62, 55.45], "Sierra Leone – Freetown": [8.48, -13.23], "Somalie – Mogadiscio": [2.05, 45.32], "Soudan – Khartoum": [15.5, 32.56], "Soudan du Sud – Juba": [4.85, 31.58], "São Tomé-et-Principe – São Tomé": [0.34, 6.73], "Sénégal – Dakar": [14.72, -17.47], "Sénégal – Tambacounda": [13.77, -13.67], "Tanzanie – Dar es Salaam": [-6.79, 39.21], "Tanzanie – Dodoma": [-6.16, 35.75], "Tanzanie – Mwanza": [-2.52, 32.9], "Tchad – N'Djamena": [12.13, 15.06], "Togo – Lomé": [6.13, 1.22], "Tunisie – Tunis": [36.81, 10.18], "Zambie – Lusaka": [-15.39, 28.32], "Zambie – Ndola": [-12.96, 28.64], "Zimbabwe – Bulawayo": [-20.13, 28.63], "Zimbabwe – Harare": [-17.83, 31.05] };
 const LIVE = { timer: 0, wx: null, wxKey: "", busy: false };
-function liveLL(S) { const ll = SITE_LL[S.siteSel]; return ll ? { lat: ll[0], lon: ll[1] } : { lat: -11.66, lon: 27.48 }; }
+function liveLL(S) { if (S.gps && isFinite(S.gps.lat) && isFinite(S.gps.lon))
+    return { lat: S.gps.lat, lon: S.gps.lon }; const ll = SITE_LL[S.siteSel]; return ll ? { lat: ll[0], lon: ll[1] } : { lat: -11.66, lon: 27.48 }; }
 function liveCacheKey(S) { const ll = liveLL(S), d = new Date(); return `mupwx:${ll.lat.toFixed(2)},${ll.lon.toFixed(2)}:${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
 function liveLoadCache(S) { try {
     const s = localStorage.getItem(liveCacheKey(S));
@@ -2858,7 +2859,8 @@ function liveIcon(kind) {
 }
 function vLive(R, S) {
     return `<div class="card full live" id="live-card">
-  <div class="row" style="align-items:center;justify-content:space-between"><div><span class="eyebrow">en direct</span><h2 style="font-size:19px;margin:2px 0 0" id="live-title">Mon installation</h2></div><span class="tag" id="live-src">…</span></div>
+  <div class="row" style="align-items:center;justify-content:space-between"><div><span class="eyebrow">simulation · météo du jour</span><h2 style="font-size:19px;margin:2px 0 0" id="live-title">Mon installation</h2></div><span class="tag" id="live-src">…</span></div>
+  <p class="small muted" style="margin:4px 0 0">Simulation du système conçu, pas les mesures de l'onduleur. Une fois l'installation posée, les vraies valeurs se lisent dans l'application du fabricant (Solarman, VRM, ShinePhone…).</p>
   <svg id="live-flow" viewBox="0 0 360 230" style="width:100%;margin-top:6px" aria-label="Flux d'énergie en direct"></svg>
   <div class="live-kpi" id="live-kpi"></div>
   <canvas id="live-chart" style="width:100%;height:170px;margin-top:8px"></canvas>
@@ -4399,6 +4401,310 @@ document.addEventListener("click", (e) => {
 }, true);
 document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest("#v-rapport a[href*='wa.me'], #v-rapport [data-print], #v-devis [data-print], #v-devis a[href*='wa.me']"); if (a && !(typeof DEMO !== "undefined" && DEMO))
     gMark("send"); }, true);
+/* MUPGLOBAL SARL – sauvegarde complète : tous les projets, prix du marché local et coordonnées de l'émetteur dans un seul fichier. */
+const BKKEY = "mupglobal_pv_lastbackup";
+function bkLast() { try {
+    return +localStorage.getItem(BKKEY) || 0;
+}
+catch (e) {
+    return 0;
+} }
+function bkInfo() {
+    const n = Object.keys(store.items || {}).length, t = bkLast();
+    const old = !t || Date.now() - t > 7 * 864e5;
+    return `<div class="card" style="margin-top:12px;display:grid;gap:8px">
+    <div class="eyebrow">Sauvegarde complète</div>
+    <p class="small" style="margin:0">${t ? "Dernière sauvegarde : <b>" + new Date(t).toLocaleDateString("fr-FR") + "</b>" : "<b>Aucune sauvegarde</b> pour l'instant"} · ${n} projet${n > 1 ? "s" : ""} sur ce téléphone.</p>
+    ${old && n ? `<div class="chk warn"><span>Vos projets ne sont gardés que dans ce téléphone : s'il est perdu, réinitialisé ou si l'application est supprimée, ils sont perdus. Faites une sauvegarde et gardez le fichier (WhatsApp, Google Drive, e-mail).</span></div>` : ""}
+    <button class="btn" type="button" data-bkall>Sauvegarder tous mes projets</button>
+    <button class="btn ghost" type="button" data-bkrest>Restaurer une sauvegarde</button>
+    <p class="small muted" style="margin:0">Le fichier contient tous les projets, vos prix du marché local et vos coordonnées d'émetteur. Sur un autre téléphone, « Restaurer une sauvegarde » ajoute ces projets sans effacer ceux déjà présents.</p>
+  </div>`;
+}
+function bkFileName() { return "MUPGLOBAL PV sauvegarde " + new Date().toISOString().slice(0, 10) + ".mupv.json"; }
+function bkData() {
+    let prix = {}, em = {};
+    try {
+        prix = JSON.parse(localStorage.getItem("mupglobal_pv_prix_locaux") || "{}") || {};
+    }
+    catch (e) { }
+    try {
+        em = JSON.parse(localStorage.getItem("mupglobal_pv_emetteur") || "{}") || {};
+    }
+    catch (e) { }
+    return { app: "MUPGLOBAL-PV", kind: "backup", v: 1, saved: new Date().toISOString(), items: store.items, cur: store.cur, prix, em };
+}
+async function bkSave() {
+    const name = bkFileName(), txt = JSON.stringify(bkData());
+    const done = () => { try {
+        localStorage.setItem(BKKEY, String(Date.now()));
+    }
+    catch (e) { } };
+    try {
+        const file = new File([txt], name, { type: "application/json" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: "Sauvegarde MUPGLOBAL PV", text: "Sauvegarde de mes projets MUPGLOBAL PV" });
+            done();
+            toast("Sauvegarde envoyée");
+            if (typeof openProjects === "function")
+                openProjects();
+            return;
+        }
+    }
+    catch (e) {
+        if (e && e.name === "AbortError")
+            return;
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([txt], { type: "application/json" }));
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    done();
+    toast("Sauvegarde enregistrée dans Téléchargements");
+    if (typeof openProjects === "function")
+        openProjects();
+}
+function bkSame(a, b) { try {
+    return JSON.stringify(a.st) === JSON.stringify(b.st);
+}
+catch (e) {
+    return false;
+} }
+function bkRestore(o) {
+    if (!o || o.app !== "MUPGLOBAL-PV")
+        throw new Error("Ce fichier n'est pas une sauvegarde MUPGLOBAL.");
+    if (o.kind !== "backup") {
+        if (o.st && Array.isArray(o.st.loads)) {
+            const id = uid();
+            store.items[id] = { st: o.st, t: Date.now() };
+            store.cur = id;
+            S = migrate(o.st);
+            persist();
+            return { added: 1, same: 0 };
+        }
+        throw new Error("Fichier de sauvegarde illisible.");
+    }
+    const its = o.items || {};
+    let added = 0, same = 0;
+    for (const k of Object.keys(its)) {
+        const it = its[k];
+        if (!it || !it.st || !Array.isArray(it.st.loads))
+            continue;
+        if (Object.values(store.items).some((x) => bkSame(x, it))) {
+            same++;
+            continue;
+        }
+        const id = store.items[k] ? uid() : k;
+        store.items[id] = { st: it.st, t: it.t || Date.now() };
+        added++;
+    }
+    if (o.prix && typeof o.prix === "object") {
+        try {
+            const cur = JSON.parse(localStorage.getItem("mupglobal_pv_prix_locaux") || "{}") || {};
+            localStorage.setItem("mupglobal_pv_prix_locaux", JSON.stringify(Object.assign({}, o.prix, cur)));
+        }
+        catch (e) { }
+        try {
+            if (typeof MYPRIX !== "undefined") {
+                Object.assign(MYPRIX, Object.assign({}, o.prix, MYPRIX));
+                if (typeof applyMyPrix === "function")
+                    applyMyPrix();
+            }
+        }
+        catch (e) { }
+    }
+    if (o.em && typeof o.em === "object" && typeof EM !== "undefined" && !Object.keys(EM).some((k) => EM[k])) {
+        Object.assign(EM, o.em);
+        if (typeof emSave === "function")
+            emSave();
+    }
+    if (!store.cur || !store.items[store.cur])
+        store.cur = Object.keys(store.items)[0] || null;
+    if (store.cur)
+        S = migrate(store.items[store.cur].st);
+    persist();
+    return { added, same };
+}
+document.addEventListener("click", (e) => {
+    const t = e.target.closest && e.target.closest("[data-bkall],[data-bkrest]");
+    if (!t)
+        return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof DEMO !== "undefined" && DEMO) {
+        if (typeof blocked === "function")
+            blocked();
+        return;
+    }
+    if ("bkall" in t.dataset) {
+        bkSave();
+        return;
+    }
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = ".json,application/json";
+    inp.onchange = async () => {
+        const f = inp.files && inp.files[0];
+        if (!f)
+            return;
+        try {
+            const r = bkRestore(JSON.parse(await f.text()));
+            closeSheet();
+            commit();
+            toast(r.added ? `${r.added} projet${r.added > 1 ? "s" : ""} restauré${r.added > 1 ? "s" : ""}${r.same ? ` (${r.same} déjà présent${r.same > 1 ? "s" : ""})` : ""}` : "Ces projets sont déjà sur ce téléphone");
+        }
+        catch (er) {
+            toast(er.message && er.message.length < 90 ? er.message : "Fichier de sauvegarde illisible");
+        }
+    };
+    inp.click();
+}, true);
+/* menu Plus → « Sauvegarder mes projets » : ouvre Mes projets directement sur la carte de sauvegarde */
+document.addEventListener("click", (e) => {
+    const t = e.target.closest && e.target.closest('[data-popen="bk"]');
+    if (!t || (typeof DEMO !== "undefined" && DEMO))
+        return;
+    e.preventDefault();
+    e.stopPropagation();
+    openProjects();
+    setTimeout(() => { const b = document.querySelector("[data-bkall]"); if (b)
+        b.closest(".card").scrollIntoView({ behavior: "smooth", block: "center" }); }, 120);
+}, true);
+/* MUPGLOBAL SARL – « Ma position » : position GPS du téléphone, ensoleillement du lieu exact.
+   En ligne : NASA POWER (moyennes mensuelles 2001-2020, rayonnement horizontal, kWh/m²/j), converti sur le plan incliné
+   (méthode isotrope de Liu-Jordan, fraction diffuse d'Erbs, albédo 0,2), panneaux orientés vers l'équateur.
+   Température maxi retenue : moyenne des maxima journaliers du mois le plus chaud + 3 °C (journées exceptionnelles).
+   Sans Internet : le site le plus proche parmi les sites enregistrés. */
+const GPS_N = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
+function gpsDist(a, b, c, d) { const r = Math.PI / 180, x = (d - b) * r * Math.cos((a + c) / 2 * r), y = (c - a) * r; return 6371 * Math.hypot(x, y); }
+function gpsNearest(lat, lon) {
+    let best = null;
+    for (const s of SITES) {
+        const ll = SITE_LL[s[0]];
+        if (!ll)
+            continue;
+        const km = gpsDist(lat, lon, ll[0], ll[1]);
+        if (!best || km < best.km)
+            best = { s, km };
+    }
+    return best;
+}
+/* rayonnement horizontal mensuel → plan incliné (orienté vers l'équateur) */
+function gpsTilted(ghi, latDeg, tiltDeg) {
+    const r = Math.PI / 180, south = latDeg < 0, phi = Math.abs(latDeg) * r, b = tiltDeg * r;
+    return ghi.map((H, i) => {
+        const n = GPS_N[i];
+        let d = 23.45 * Math.sin(2 * Math.PI * (284 + n) / 365) * r;
+        if (south)
+            d = -d;
+        const ws = Math.acos(Math.max(-1, Math.min(1, -Math.tan(phi) * Math.tan(d))));
+        const ws2 = Math.min(ws, Math.acos(Math.max(-1, Math.min(1, -Math.tan(phi - b) * Math.tan(d)))));
+        const H0 = 24 / Math.PI * 1.367 * (1 + 0.033 * Math.cos(2 * Math.PI * n / 365)) * (Math.cos(phi) * Math.cos(d) * Math.sin(ws) + ws * Math.sin(phi) * Math.sin(d));
+        const KT = Math.max(0.1, Math.min(0.8, H / H0));
+        const fd = ws <= 81.4 * r ? 1.391 - 3.56 * KT + 4.189 * KT * KT - 2.137 * KT ** 3 : 1.311 - 3.022 * KT + 3.427 * KT * KT - 1.821 * KT ** 3;
+        const Rb = (Math.cos(phi - b) * Math.cos(d) * Math.sin(ws2) + ws2 * Math.sin(phi - b) * Math.sin(d)) / (Math.cos(phi) * Math.cos(d) * Math.sin(ws) + ws * Math.sin(phi) * Math.sin(d));
+        const Hd = fd * H;
+        return Math.round(((H - Hd) * Rb + Hd * (1 + Math.cos(b)) / 2 + H * 0.2 * (1 - Math.cos(b)) / 2) * 100) / 100;
+    });
+}
+async function gpsNasa(lat, lon) {
+    const u = `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=ALLSKY_SFC_SW_DWN,T2M_MIN,T2M_MAX&community=RE&longitude=${lon.toFixed(3)}&latitude=${lat.toFixed(3)}&format=JSON`;
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 25000);
+    try {
+        const r = await fetch(u, { signal: ctl.signal });
+        if (!r.ok)
+            throw new Error("NASA " + r.status);
+        const j = await r.json(), P = j && j.properties && j.properties.parameter;
+        if (!P || !P.ALLSKY_SFC_SW_DWN)
+            throw new Error("réponse NASA vide");
+        const M = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        const ghi = M.map((m) => +P.ALLSKY_SFC_SW_DWN[m]);
+        if (ghi.some((v) => !(v > 0) || v > 12))
+            throw new Error("valeurs NASA manquantes");
+        const tmin = P.T2M_MIN ? Math.min(...M.map((m) => +P.T2M_MIN[m]).filter((v) => v > -90)) : null, tmax = P.T2M_MAX ? Math.max(...M.map((m) => +P.T2M_MAX[m]).filter((v) => v > -90)) : null;
+        return { ghi, tmin, tmax };
+    }
+    finally {
+        clearTimeout(to);
+    }
+}
+function gpsPos() {
+    return new Promise((ok, ko) => {
+        if (!navigator.geolocation)
+            return ko(new Error("Ce téléphone ne donne pas sa position."));
+        navigator.geolocation.getCurrentPosition((p) => ok(p.coords), (e) => ko(new Error(e && e.code === 1 ? "Position refusée : autorisez la localisation pour MUPGLOBAL PV dans les réglages du navigateur." : "Position introuvable : activez la localisation (GPS) du téléphone et réessayez à l'extérieur.")), { enableHighAccuracy: true, timeout: 20000, maximumAge: 300000 });
+    });
+}
+function gpsFmt(lat, lon) { const f = (v) => Math.abs(v).toFixed(4).replace(".", ","); return `${f(lat)}° ${lat < 0 ? "S" : "N"}, ${f(lon)}° ${lon < 0 ? "O" : "E"}`; }
+async function gpsRun(manual) {
+    if (typeof DEMO !== "undefined" && DEMO) {
+        if (typeof blocked === "function")
+            blocked();
+        return;
+    }
+    let lat, lon, acc = null;
+    if (manual) {
+        lat = manual[0];
+        lon = manual[1];
+    }
+    else {
+        toast("Recherche de votre position…");
+        try {
+            const c = await gpsPos();
+            lat = c.latitude;
+            lon = c.longitude;
+            acc = c.accuracy;
+        }
+        catch (e) {
+            toast(e.message);
+            return;
+        }
+    }
+    const nb = gpsNearest(lat, lon), tilt = Math.max(10, Math.min(35, Math.round(Math.abs(lat))));
+    const near = nb ? nb.s[0].replace(/^.* – /, "") : "";
+    let src = "", hsp = null, tmin = null, tmax = null;
+    if (navigator.onLine !== false) {
+        toast("Ensoleillement du lieu (NASA POWER)…");
+        try {
+            const n = await gpsNasa(lat, lon);
+            hsp = gpsTilted(n.ghi, lat, tilt);
+            tmin = n.tmin;
+            tmax = n.tmax;
+            src = "NASA POWER";
+        }
+        catch (e) {
+            src = "";
+        }
+    }
+    if (!hsp) {
+        if (!nb) {
+            toast("Ensoleillement indisponible hors connexion");
+            return;
+        }
+        hsp = nb.s[3].slice();
+        src = "site le plus proche : " + nb.s[0];
+    }
+    S.hsp = hsp;
+    S.tilt = src === "NASA POWER" ? tilt : nb.s[2];
+    S.tmin = tmin != null && isFinite(tmin) ? Math.floor(tmin) : nb ? nb.s[4] : S.tmin;
+    S.tmax = tmax != null && isFinite(tmax) ? Math.ceil(tmax + 3) : nb ? nb.s[5] : S.tmax;
+    S.siteSel = "";
+    S.gps = { lat: Math.round(lat * 1e5) / 1e5, lon: Math.round(lon * 1e5) / 1e5, acc: acc ? Math.round(acc) : null, src, near, km: nb ? Math.round(nb.km) : null, t: Date.now() };
+    S.projet.site = `GPS ${gpsFmt(lat, lon)}${near ? " (" + (nb.km < 15 ? "" : "≈ " + Math.round(nb.km) + " km de ") + near + ")" : ""}`;
+    commit();
+    toast(src === "NASA POWER" ? `Ensoleillement du lieu : ${(hsp.reduce((a, b) => a + b, 0) / 12).toFixed(2).replace(".", ",")} h/j en moyenne` : "Hors connexion : valeurs du site le plus proche");
+}
+function gpsBtn() {
+    const g = S.gps;
+    return `<div class="card" style="display:grid;gap:8px;padding:12px;margin:2px 0 10px">
+    <button class="btn ghost" type="button" data-gps>📍 Utiliser ma position (GPS)</button>
+    ${g ? `<p class="small" style="margin:0">Position : <b>${gpsFmt(g.lat, g.lon)}</b>${g.acc ? ` (± ${g.acc} m)` : ""}. Ensoleillement : <b>${g.src === "NASA POWER" ? "NASA POWER, lieu exact" : esc(g.src)}</b>${g.src === "NASA POWER" ? ` · inclinaison ${S.tilt}° vers ${g.lat < 0 ? "le nord" : "le sud"}` : ""}.</p>` : `<p class="small muted" style="margin:0">Sur place, chez le client : la position du téléphone donne l'ensoleillement mensuel exact du lieu (NASA POWER, Internet nécessaire). Sans Internet, les valeurs du site enregistré le plus proche sont reprises.</p>`}
+  </div>`;
+}
+document.addEventListener("click", (e) => { const t = e.target.closest && e.target.closest("[data-gps]"); if (!t)
+    return; e.preventDefault(); gpsRun(); });
 /* MUPGLOBAL SARL – catalogue illustré : chaque matériel avec sa photo constructeur, ou une illustration aux couleurs de la marque */
 /* prix du marché local : l'utilisateur remplace le prix indicatif du catalogue par son propre prix (mémorisé sur l'appareil, valable pour tous les projets) */
 const MYP_K = "mupglobal_pv_prix_locaux";
@@ -5062,7 +5368,7 @@ document.addEventListener("click", (e) => {
     ov.querySelector("button").onclick = () => ov.remove();
 });
 /* MUPGLOBAL SARL – alerte de mise à jour : compare la version installée à la version publiée (version.json) */
-const APP_BUILD = "202611110257", APP_VER = "1.6", APP_NOTES = ["Photos des onduleurs SRNE (HESP, ASP, HF, HFP) ; caractéristiques du HESP48120U200-H corrigées", "Catalogue Raggie : 35 onduleurs hybrides, 36 batteries (lithium et gel) et 7 panneaux RG-M, avec photos", "Catalogues : batteries SRNE (SE, EOS, EOM), Growatt SPH BL-UP, ARK et AXE, onduleurs Sunsynk 2022, avec photos", "Alerte si le courant des panneaux dépasse l'entrée PV de l'onduleur"];
+const APP_BUILD = "202611110401", APP_VER = "1.6", APP_NOTES = ["Sauvegarde complète : tous vos projets, prix locaux et coordonnées dans un seul fichier (WhatsApp, Google Drive), restauration sur un autre téléphone", "Bouton « Utiliser ma position (GPS) » : ensoleillement du lieu exact (NASA POWER) ; sans Internet, site le plus proche", "« Mon installation en direct » devient « Simulation de fonctionnement »", "Photos des onduleurs SRNE (HESP, ASP, HF, HFP) ; caractéristiques du HESP48120U200-H corrigées", "Catalogue Raggie : 35 onduleurs hybrides, 36 batteries (lithium et gel) et 7 panneaux RG-M, avec photos"];
 const APP_URL = "https://mupglobalsarl.github.io/pv/";
 const UPD_ONLINE = location.protocol === "https:" && /mupglobalsarl\.github\.io$/i.test(location.hostname);
 const UPD_URL = UPD_ONLINE ? "version.json" : APP_URL + "version.json";
@@ -5977,7 +6283,7 @@ const sec = (t, sv, body, open) => `<details class="card" ${open ? "open" : ""}>
 function vPar() {
     const brands = BRANDS_ALL;
     return `
-  ${sec("Client et site", esc(S.projet.client || "—"), `${fld("projet.nom", "Nom du projet", { text: 1 })}${fld("siteSel", "Site (pays – ville)", { opts: [...SITES.map((s) => [s[0], s[0]]), ["", "Autre site (saisie libre)"]], hint: "54 pays africains : ensoleillement mensuel, températures et inclinaison conseillée remplis automatiquement (valeurs indicatives, modifiables)." })}${fld("projet.client", "Nom du client", { text: 1, ph: "ex. M. Kalala" })}<div class="g2">${fld("projet.tel", "Téléphone du client", { text: 1 })}${fld("projet.ref", "Référence", { text: 1 })}</div>${fld("projet.site", "Site", { text: 1 })}`, true)}
+  ${sec("Client et site", esc(S.projet.client || "—"), `${fld("projet.nom", "Nom du projet", { text: 1 })}${fld("siteSel", "Site (pays – ville)", { opts: [...SITES.map((s) => [s[0], s[0]]), ["", S.gps && !S.siteSel ? "Position GPS (lieu exact)" : "Autre site (saisie libre)"]], hint: "54 pays africains : ensoleillement mensuel, températures et inclinaison conseillée remplis automatiquement (valeurs indicatives, modifiables)." })}${typeof gpsBtn === "function" ? gpsBtn() : ""}${fld("projet.client", "Nom du client", { text: 1, ph: "ex. M. Kalala" })}<div class="g2">${fld("projet.tel", "Téléphone du client", { text: 1 })}${fld("projet.ref", "Référence", { text: 1 })}</div>${fld("projet.site", "Site", { text: 1 })}`, true)}
   ${sec("Installation", esc(S.marque), `${fld("marque", "Marque d'onduleur", { opts: brands, hint: "Victron : MultiPlus-II + régulateurs séparés. Autres marques (Deye, Growatt, Must, Felicity, SRNE, Sako, Hanchu ESS, Sunsynk, Luxpower, Solis, GoodWe, Inverex, Axpert, Easun, Mecer, DEV Solaire, Raggie) : onduleur hybride à MPPT intégrés." })}
     ${seg("phases", "Réseau à alimenter", [["Monophasé", "Monophasé"], ["Triphasé", "Triphasé"]])}
     ${matCard("inverter", R.INVMODEL, S.marque)}${R.ISVIC && R.NMPPT ? matCard("mppt", R.MPPTSEL, "Victron Energy") : ""}
@@ -6197,6 +6503,7 @@ function openProjects() {
   <div class="row" style="margin-top:12px"><button class="btn" type="button" data-pnew>Nouveau projet</button><button class="btn ghost" type="button" data-impx>Importer un projet Excel</button><button class="btn ghost" type="button" data-impj>Ouvrir un fichier projet (.json)</button></div>
   <p class="small muted" style="margin:6px 0 0">Import : enregistrez le projet dans le programme Excel (Ctrl + S), envoyez-vous le fichier .xlsm sur le téléphone (WhatsApp, e-mail), puis choisissez-le ici.</p>
   <p class="small muted">Les projets sont enregistrés sur cet appareil, dans ce navigateur. ⤓ = sauvegarde du projet dans un fichier (Téléchargements), à garder ou à envoyer sur un autre téléphone.</p>
+  ${typeof bkInfo === "function" ? bkInfo() : ""}
   <div class="card" style="margin-top:12px;display:grid;gap:4px"><div class="eyebrow">Licence</div>${kv("Titulaire", esc(LIC.name))}${kv("Numéro", String(LIC.serial).padStart(4, "0"))}${kv("Validité", LIC.exp ? "jusqu'au " + LIC.exp.toLocaleDateString("fr-FR") : "permanente")}${kv("Code de l'appareil", fmtCode(DEVICE))}<button type="button" class="btn ghost" data-lic style="margin-top:6px">Changer de clé</button></div>`);
 }
 function goFix(tg) {
@@ -6619,6 +6926,7 @@ document.addEventListener("change", (e) => {
         if (p === "invForce" || p === "mppt" || p === "batSel" || p === "battech" || p === "marque" || p === "base" || p === "siteSel")
             v = el.value;
         if (p === "siteSel" && v) {
+            delete S.gps;
             const st = SITES.find((x) => x[0] === v);
             if (st) {
                 S.hsp = st[3].slice();
@@ -6711,16 +7019,17 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#she
 /* ---------- vues Plus ---------- */
 const back = (t) => `<div class="row noprint" style="align-items:center"><button type="button" class="btn ghost" data-tab="plus" style="flex:0 0 auto">‹ Plus</button><h2 style="font-size:18px;flex:1">${t}</h2></div>`;
 function vPlus() {
-    const T = [["install", "Installer l'application (icône)", "Mettre MUPGLOBAL PV sur l'écran d'accueil du téléphone, comme une vraie application, pour la retrouver facilement.", "install"], ["live", "Mon installation en direct", "Production, consommation et batteries en ce moment, avec la météo réelle du jour (en ligne) ou une journée type (hors ligne).", "live"], ["pres", "Présentation client", "Plan commercial animé avec les chiffres du projet, à montrer au client.", "pres"], ["iso", "Visuel commercial du projet", "Illustration de la maison équipée : modules, régulateurs, onduleurs et batteries selon le dimensionnement.", "iso"],
+    const T = [["install", "Installer l'application (icône)", "Mettre MUPGLOBAL PV sur l'écran d'accueil du téléphone, comme une vraie application, pour la retrouver facilement.", "install"], ["live", "Simulation de fonctionnement", "Ce que l'installation conçue produirait et consommerait heure par heure, avec la météo réelle du jour (en ligne) ou une journée type (hors ligne). Ce ne sont pas les mesures de l'onduleur.", "live"], ["pres", "Présentation client", "Plan commercial animé avec les chiffres du projet, à montrer au client.", "pres"], ["iso", "Visuel commercial du projet", "Illustration de la maison équipée : modules, régulateurs, onduleurs et batteries selon le dimensionnement.", "iso"],
         ["uni", "Schéma unifilaire", "Schéma redessiné automatiquement : strings, protections, sections, batteries.", "uni"], ["sim", "Simulateur et défauts", "Voir le système fonctionner, mesurer, injecter des défauts, s'entraîner au diagnostic.", "sim"], ["rapport", "Rapport client", "Fiche à envoyer par WhatsApp, avec la vue 3D et le schéma.", "rapport"],
         ["devis", "Devis détaillé", "Devis numéroté par lot : quantités, prix unitaires, sous-totaux, HT, TVA, TTC, conditions et signatures. Imprimable et copiable pour WhatsApp.", "devis"],
         ["formules", "Formules de calcul", "Chaque partie du système expliquée : formule, application aux chiffres du projet et résultat (bilan, champ PV, onduleur, MPPT, batteries, câbles, protections, devis).", "formules"],
+        ["backup", "Sauvegarder mes projets", "Tous vos projets, prix du marché local et coordonnées dans un seul fichier, à garder sur WhatsApp ou Google Drive ; restauration sur un autre téléphone.", "backup"],
         ["updchk", "Vérifier les mises à jour", `Version installée : ${APP_VER} du ${updDate(APP_BUILD)}. L'application vous prévient automatiquement quand une nouvelle version est publiée.`, "updchk"],
         ["catal", "Catalogue du matériel", "Onduleurs, régulateurs, batteries et panneaux avec photo ou illustration, caractéristiques et prix ; choisissez un matériel pour le projet.", "catal"],
         ["licinfo", "Licence, tarifs et assistance", "Prix des licences, ce qui est inclus, formation offerte, changement d'appareil, mises à jour et questions fréquentes.", "licinfo"],
         ["fiab", "Fiabilité des calculs", "La méthode utilisée, les hypothèses de ce projet, les contrôles automatiques et ce que vous devez encore vérifier sur le terrain.", "fiab"],
         ["liens", "Liens utiles", "Sites officiels pour le dimensionnement : ensoleillement de votre site (Global Solar Atlas, PVGIS, NASA POWER), calculateur MPPT et applications Victron, assistance.", "liens"]];
-    return T.filter((x) => OFFRE_ON || !["licinfo", "fiab"].includes(x[0])).map(([k, t, d]) => `<button type="button" class="tile2" ${k === "install" ? "data-install" : k === "updchk" ? "data-updchk" : `data-tab="${k}"`}${k === "install" && isStandalone() ? ' hidden' : ""}><span class="eyebrow">${k === "install" ? "application" : k === "sim" || k === "formules" ? "formation" : k === "liens" ? "ressources" : k === "pres" || k === "devis" ? "vente" : k === "live" ? "suivi en direct" : "projet"}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("");
+    return T.filter((x) => OFFRE_ON || !["licinfo", "fiab"].includes(x[0])).map(([k, t, d]) => `<button type="button" class="tile2" ${k === "install" ? "data-install" : k === "updchk" ? "data-updchk" : k === "backup" ? "data-popen=\"bk\"" : `data-tab="${k}"`}${k === "install" && isStandalone() ? ' hidden' : ""}><span class="eyebrow">${k === "install" ? "application" : k === "sim" || k === "formules" ? "formation" : k === "liens" ? "ressources" : k === "pres" || k === "devis" ? "vente" : k === "live" ? "simulation" : "projet"}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("");
 }
 function vUni() { return back("Schéma unifilaire") + `<div class="card" style="padding:8px">${unifilaireMobileSVG(R, S)}</div><p class="small muted">Schéma unifilaire en symboles normalisés, redessiné automatiquement pour ce projet à chaque modification (strings, protections, MPPT, onduleurs, batteries, tableau AC, terre).</p><details class="card" open><summary>Schéma de connexion du matériel<span class="sv">photos</span></summary><div class="dbody"><div class="tbl unibox">${connSVG(R, S)}</div><p class="small muted">Inspiré des schémas de système Victron Energy, redessiné automatiquement avec le matériel de ce projet (photos des catalogues constructeurs).</p></div></details>${(setTimeout(connCut, 0), "")}`; }
 function vIso() { return back("Visuel du projet") + `<div class="card" style="padding:8px">${visuel(R, S, true)}</div><p class="small muted">Modules, régulateurs MPPT, onduleurs et batteries redessinés automatiquement selon le dimensionnement de ce projet. Les repères correspondent à la liste du matériel.</p><div class="row"><button type="button" class="btn" data-print>Imprimer / PDF</button></div>`; }
@@ -6761,7 +7070,7 @@ function render() {
         $("#v-" + k).hidden = k !== view;
     const el = $("#v-" + view);
     const empty = R.EAC + R.EDC <= 0 && ["res", "bud", "rapport", "uni", "iso", "pres", "sim", "live", "formules", "devis"].includes(view);
-    el.innerHTML = empty ? vEmpty() : { res: vRes, app: vApp, par: vPar, bud: vBud, rapport: () => back("Rapport client") + vRapport(), plus: vPlus, uni: vUni, iso: vIso, pres: () => back("Présentation client") + vPres(R, S), sim: () => back("Simulateur") + vSim(R, S), live: () => back("Mon installation en direct") + vLive(R, S), formules: () => back("Formules de calcul") + vFormules(R, S), devis: () => back("Devis détaillé") + vDevisDet(R, S), liens: () => back("Liens utiles") + vLiens(R, S), fiab: () => back("Fiabilité des calculs") + vFiab(), licinfo: () => back("Licence et assistance") + vLicInfo(), catal: () => back("Catalogue du matériel") + vCatal() }[view]();
+    el.innerHTML = empty ? vEmpty() : { res: vRes, app: vApp, par: vPar, bud: vBud, rapport: () => back("Rapport client") + vRapport(), plus: vPlus, uni: vUni, iso: vIso, pres: () => back("Présentation client") + vPres(R, S), sim: () => back("Simulateur") + vSim(R, S), live: () => back("Simulation de fonctionnement") + vLive(R, S), formules: () => back("Formules de calcul") + vFormules(R, S), devis: () => back("Devis détaillé") + vDevisDet(R, S), liens: () => back("Liens utiles") + vLiens(R, S), fiab: () => back("Fiabilité des calculs") + vFiab(), licinfo: () => back("Licence et assistance") + vLicInfo(), catal: () => back("Catalogue du matériel") + vCatal() }[view]();
     if (same) {
         el.querySelectorAll("details").forEach((d, i) => { if (open[i] !== undefined)
             d.open = open[i]; });
