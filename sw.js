@@ -1,5 +1,5 @@
 /* MUPGLOBAL SARL – service worker : application disponible hors connexion, mise à jour automatique quand Internet est disponible */
-const CACHE = "mupglobal-pv-202611141710";
+const CACHE = "mupglobal-pv-202611141720";
 const IMG = "mupglobal-pv-img"; /* photos des produits : cache durable, rempli à la demande puis complété en arrière-plan */
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./installer.html", "./qr-installer.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
