@@ -6553,7 +6553,7 @@ PROD_RULES.unshift([/SRNE HESP/i, "sr_hesp", 0, "brochure SRNE US 5.1"], [/SRNE 
 function prodImg(model) { const m = String(model || ""); for (const [re, k, ap, src] of PROD_RULES)
     if (re.test(m))
         return { src: PROD_IMGS[k], approx: ap, from: src }; return null; }
-const VIS_IMG = "img/vis_maison.45df7f49.jpg";
+const VIS_IMG = "img/vis_maison.c0ec06a6.webp";
 const DZI_PV = "img/dzi_pv.20695f97.png";
 const DZI_BAT = "img/dzi_bat.2f4b4619.png";
 const DZI_INV = "img/dzi_inv.8fd5d2c6.png";
@@ -6608,17 +6608,21 @@ function visBatteries(N) {
     /* même image que le tableau de bord et le devis : photo du modèle choisi, sinon l'image de batterie par défaut */
     const bph = typeof prodImg === "function" && typeof R !== "undefined" && R.BAT ? prodImg(R.BAT.ref) : null, bsrc = (bph || {}).src || (typeof DZI_BAT !== "undefined" ? DZI_BAT : "");
     if (bsrc) {
-        let o = `<rect x="${x0 - 8}" y="${y0 - 10}" width="${w + 16}" height="${h + 14}" fill="url(#visWall)"/>`;
+        let o = `<rect x="${x0 - 10}" y="${y0 - 12}" width="${w + 20}" height="${h + 16}" rx="6" fill="url(#visWall)" filter="url(#visFb)"/><ellipse cx="${x0 + w / 2}" cy="${y1 + 2}" rx="${w / 2 + 6}" ry="7" fill="#000" opacity=".28" filter="url(#visFb)"/>`;
         if (bph) {
-            const k = Math.max(1, Math.min(N, 3)), gap = 6, cw = (w + 8 - gap * (k - 1)) / k;
+            const k = Math.max(1, Math.min(N, 2)), gap = 8, cw = (w + 8 - gap * (k - 1)) / k;
+            o += `<g filter="url(#visSh)">`;
             for (let i = 0; i < k; i++)
                 o += `<image href="${esc(bsrc)}" x="${(x0 - 4 + i * (cw + gap)).toFixed(1)}" y="${y0 - 6}" width="${cw.toFixed(1)}" height="${h + 8}" preserveAspectRatio="xMidYMax meet"/>`;
+            o += `</g>`;
         }
         else {
             /* image par défaut (rangée de batteries) : empilée comme dans une armoire */
             const rows = Math.max(1, Math.min(4, Math.ceil(N / 4))), rh = (h + 8) / Math.max(rows, 2);
+            o += `<g filter="url(#visSh)">`;
             for (let i = 0; i < rows; i++)
                 o += `<image href="${esc(bsrc)}" x="${x0 - 6}" y="${(y1 + 2 - (i + 1) * rh).toFixed(1)}" width="${w + 12}" height="${rh.toFixed(1)}" preserveAspectRatio="xMidYMax meet"/>`;
+            o += `</g>`;
         }
         if (N > 1)
             o += `<rect x="${x0 + w / 2 - 38}" y="${y0 - 38}" width="76" height="28" rx="14" fill="#0B3B22"/><text x="${x0 + w / 2}" y="${y0 - 18}" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="Arial,sans-serif">× ${N}</text>`;
@@ -6664,7 +6668,7 @@ function visInverter(R, S) {
     let s = "";
     const ph = !R.ISVIC && typeof prodImg === "function" ? prodImg(R.INVMODEL) : null;
     if (ph)
-        s += `<rect x="702" y="${y(1022)}" width="92" height="118" rx="6" fill="#CDB49C"/><image href="${ph.src}" x="704" y="${y(1024)}" width="88" height="114" preserveAspectRatio="xMidYMid meet"/>` + visBadge(5, 752, 985, 748, 1060);
+        s += `<rect x="699" y="${y(1019)}" width="98" height="124" rx="8" fill="#CDB49C" filter="url(#visFb)"/><image href="${ph.src}" x="704" y="${y(1024)}" width="88" height="114" preserveAspectRatio="xMidYMid meet" filter="url(#visSh)"/>` + visBadge(5, 752, 985, 748, 1060);
     else if (!R.ISVIC) {
         const bc = (typeof BRANDCOL !== "undefined" && BRANDCOL[S.marque]) || ["#F2F4F5", "#3D7BC4"];
         s += `<rect x="704" y="${y(1026)}" width="86" height="108" rx="6" fill="#CDB49C"/><rect x="708" y="${y(1030)}" width="78" height="100" rx="5" fill="${bc[0]}" stroke="#2A2F36" stroke-width="2"/>` +
@@ -6688,7 +6692,9 @@ function visuelSVG(R, S) {
     <rect x="0.045" y="0.07" width="0.91" height="0.86" fill="none" stroke="#5A6B85" stroke-width="0.012"/></g><filter id="${u}Bl" x="-5%" y="-20%" width="110%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
     <linearGradient id="visBat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#363B42"/><stop offset="1" stop-color="#1D2025"/></linearGradient>
     <linearGradient id="visMp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A86F0"/><stop offset="1" stop-color="#1747A8"/></linearGradient>
-    <linearGradient id="visWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6C0A9"/><stop offset="1" stop-color="#C9B096"/></linearGradient></defs>`;
+    <linearGradient id="visWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6C0A9"/><stop offset="1" stop-color="#C9B096"/></linearGradient>
+    <filter id="visSh" x="-20%" y="-20%" width="150%" height="150%"><feDropShadow dx="3" dy="6" stdDeviation="5" flood-color="#000" flood-opacity=".45"/></filter>
+    <filter id="visFb" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="4"/></filter></defs>`;
     const out = `<svg class="vis-svg" viewBox="0 0 ${VIS_W} ${VIS_H}" role="img" aria-label="Visuel de l'installation : ${R.NMOD} modules, ${R.NBAT} batteries, ${R.ISVIC ? R.NMPPT + " régulateur(s) MPPT" : "MPPT intégrés"}, ${R.NINV} onduleur(s)" style="width:100%;height:auto;display:block">${defs}
     <image href="${VIS_IMG}" x="0" y="0" width="${VIS_W}" height="${VIS_H}" preserveAspectRatio="none"/>
     ${pv.svg}${visBadge(1, 1340, 520, pv.mark[0], pv.mark[1])}
@@ -6697,7 +6703,7 @@ function visuelSVG(R, S) {
     ${visBatteries(R.NBAT)}${visBadge(9, 572, 1300, 640, 1270)}
     ${S.groupe === "Oui" ? "" : visTag(315, 1000, "Non prévu")}${S.mode === "Hybride" ? "" : visTag(196, 760, "Non raccordé")}
   </svg>`;
-    return out.replace(/id="vis(Pv|Bat|Mp|Wall)"/g, `id="${u}$1"`).replace(/url\(#vis(Pv|Bat|Mp|Wall)\)/g, `url(#${u}$1)`);
+    return out.replace(/id="vis(Pv|Bat|Mp|Wall|Sh|Fb)"/g, `id="${u}$1"`).replace(/url\(#vis(Pv|Bat|Mp|Wall|Sh|Fb)\)/g, `url(#${u}$1)`);
 }
 /* miniature du visuel commercial (sans repères) pour la carte Consommation de Résultats */
 function visMini(R, S, x, y, w, h) {
@@ -6705,7 +6711,7 @@ function visMini(R, S, x, y, w, h) {
     const defs = full.slice(full.indexOf("<defs>"), full.indexOf("</defs>") + 7);
     const pv = visPanels(R.NMOD, u);
     const body = `<image href="${VIS_IMG}" x="0" y="0" width="${VIS_W}" height="${VIS_H}" preserveAspectRatio="none"/>${pv.svg}${visMppt(R.NMPPT, R.ISVIC)}${visBatteries(R.NBAT)}`
-        .replace(/url\(#vis(Pv|Bat|Mp|Wall)\)/g, `url(#${u}$1)`).replace(/<rect x="\d+" y="[\d.-]+" width="68" height="26"[^>]*\/><text[^>]*>[^<]*<\/text>/g, "");
+        .replace(/url\(#vis(Pv|Bat|Mp|Wall|Sh|Fb)\)/g, `url(#${u}$1)`).replace(/<rect x="\d+" y="[\d.-]+" width="68" height="26"[^>]*\/><text[^>]*>[^<]*<\/text>/g, "");
     return `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="170 120 1880 1060" preserveAspectRatio="xMidYMid slice"><clipPath id="${u}Cl"><rect x="170" y="120" width="1880" height="1060" rx="40"/></clipPath><g clip-path="url(#${u}Cl)">${defs}${body}</g></svg>`;
 }
 function visLegend(R, S) {
