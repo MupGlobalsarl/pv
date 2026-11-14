@@ -6605,6 +6605,25 @@ function visPanels(N, u) {
 }
 function visBatteries(N) {
     const x0 = 596, x1 = 768, y0 = 1203 - VIS_DY, y1 = 1360 - VIS_DY, w = x1 - x0, h = y1 - y0;
+    /* même image que le tableau de bord et le devis : photo du modèle choisi, sinon l'image de batterie par défaut */
+    const bph = typeof prodImg === "function" && typeof R !== "undefined" && R.BAT ? prodImg(R.BAT.ref) : null, bsrc = (bph || {}).src || (typeof DZI_BAT !== "undefined" ? DZI_BAT : "");
+    if (bsrc) {
+        let o = `<rect x="${x0 - 8}" y="${y0 - 10}" width="${w + 16}" height="${h + 14}" fill="url(#visWall)"/>`;
+        if (bph) {
+            const k = Math.max(1, Math.min(N, 3)), gap = 6, cw = (w + 8 - gap * (k - 1)) / k;
+            for (let i = 0; i < k; i++)
+                o += `<image href="${esc(bsrc)}" x="${(x0 - 4 + i * (cw + gap)).toFixed(1)}" y="${y0 - 6}" width="${cw.toFixed(1)}" height="${h + 8}" preserveAspectRatio="xMidYMax meet"/>`;
+        }
+        else {
+            /* image par défaut (rangée de batteries) : empilée comme dans une armoire */
+            const rows = Math.max(1, Math.min(4, Math.ceil(N / 4))), rh = (h + 8) / Math.max(rows, 2);
+            for (let i = 0; i < rows; i++)
+                o += `<image href="${esc(bsrc)}" x="${x0 - 6}" y="${(y1 + 2 - (i + 1) * rh).toFixed(1)}" width="${w + 12}" height="${rh.toFixed(1)}" preserveAspectRatio="xMidYMax meet"/>`;
+        }
+        if (N > 1)
+            o += `<rect x="${x0 + w / 2 - 38}" y="${y0 - 38}" width="76" height="28" rx="14" fill="#0B3B22"/><text x="${x0 + w / 2}" y="${y0 - 18}" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="Arial,sans-serif">× ${N}</text>`;
+        return o;
+    }
     const n = Math.max(1, Math.min(N, 24)), cols = n <= 8 ? 2 : n <= 15 ? 3 : 4, rows = Math.max(4, Math.ceil(n / cols));
     const mw = (w - 14 - (cols - 1) * 5) / cols, mh = (h - 14 - (rows - 1) * 5) / rows;
     let s = `<rect x="${x0 - 4}" y="${y0 - 6}" width="${w + 8}" height="${h + 10}" rx="3" fill="#0C0D0F"/><rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="#17191C" stroke="#050607" stroke-width="5"/>`;
