@@ -7324,7 +7324,7 @@ function pvDash() {
       <radialGradient id="pzfg" cx=".5" cy=".5" r=".62"><stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>
       <mask id="pzfade" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="url(#pzfg)"/></mask></defs>
     <rect width="360" height="424" fill="url(#pzbg)"/><rect id="pz-day-ov" width="360" height="424" fill="url(#pzsun)" opacity="0"/>
-    ${vic ? flow("M60 76 V186", "sol", "pzf1") + flow("M108 186 H130 V262", "sol", "pzf1b") : flow("M60 76 V186 H180", "sol", "pzf1")}
+    ${vic ? flow("M60 76 V186", "sol", "pzf1") + flow("M60 186 H130 V262", "sol", "pzf1b") : flow("M60 76 V186 H180", "sol", "pzf1")}
     ${hyb ? flow("M180 80 V186", "res", "pzf2") : ""}
     ${gen ? flow("M300 80 V186 H180", "gen", "pzf5") : ""}
     ${flow("M168 186 V262 H79 V338", "batc", "pzf4")}
