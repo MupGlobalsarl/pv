@@ -51,9 +51,17 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:20px 16px 40p
   <div class="cta">
     <button class="btn main" id="inst" hidden>⬇ Installer l'application</button>
     <a class="btn main" id="open" href="./index.html">Ouvrir l'application</a>
-    <a class="btn sec" href="#video">🎬 Voir la vidéo d'installation</a>
+    <a class="btn sec" href="#video">🎬 Voir la vidéo d'installation (avec voix)</a>
     <a class="btn sec" href="https://wa.me/243995679353?text=Bonjour%20MUPGLOBAL%20SARL%2C%20je%20souhaite%20une%20licence%20de%20l%27application%20MUPGLOBAL%20PV." target="_blank" rel="noopener">Demander une licence par WhatsApp</a>
   </div>
+
+  <section class="card" id="video">
+    <h2>🎬 Vidéo commentée : installer et activer (Android et iPhone)</h2>
+    <video controls playsinline preload="metadata" poster="img/video-installation-poster.jpg" style="width:100%;max-width:360px;display:block;margin:0 auto;border-radius:14px;background:#000;aspect-ratio:9/16">
+      <source src="video-installation.mp4?v=2" type="video/mp4">
+    </video>
+    <p style="text-align:center;margin:10px 0 0"><a href="video-installation.mp4" download style="color:var(--brand-2);font-weight:700">⬇ Télécharger la vidéo (2,6 Mo, commentée)</a></p>
+  </section>
 
   <div class="tabs" role="tablist">
     <button role="tab" id="tA" aria-selected="true" onclick="tab('A')">🤖 Android</button>
@@ -89,13 +97,6 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:20px 16px 40p
     <p class="note"><b>Ensuite :</b> ouvrez l'application <b>depuis l'icône MUPGLOBAL PV</b> et demandez votre clé <b>depuis l'icône</b> (sur iPhone, l'icône a son propre code d'appareil).<br>Pas de « Sur l'écran d'accueil » ? Vous êtes peut-être dans WhatsApp ou en navigation privée : copiez le lien et ouvrez-le dans Safari.</p>
   </section>
 
-  <section class="card" id="video">
-    <h2>🎬 Vidéo : installer et activer (Android et iPhone)</h2>
-    <video controls playsinline preload="none" poster="icon-512.png" style="width:100%;max-width:360px;display:block;margin:0 auto;border-radius:14px;background:#000;aspect-ratio:9/16">
-      <source src="video-installation.mp4?v=2" type="video/mp4">
-    </video>
-    <p style="text-align:center;margin:10px 0 0"><a href="video-installation.mp4" download style="color:var(--brand-2);font-weight:700">⬇ Télécharger la vidéo (2,6 Mo, commentée)</a></p>
-  </section>
 
   <section class="card" id="pc">
     <h2>Sur ordinateur ?</h2>
