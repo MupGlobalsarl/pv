@@ -1,7 +1,7 @@
 {
- "name": "MUPGLOBAL PV – Dimensionnement solaire",
- "short_name": "MUPGLOBAL PV",
- "description": "Programme de dimensionnement photovoltaïque – MUPGLOBAL SARL, Lubumbashi",
+ "name": "MupPV – Dimensionnement solaire",
+ "short_name": "MupPV",
+ "description": "MupPV – La précision solaire, maîtrisée. Programme de dimensionnement photovoltaïque par MUPGLOBAL SARL, Lubumbashi",
  "lang": "fr",
  "start_url": "./index.html",
  "scope": "./",

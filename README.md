@@ -1,6 +1,6 @@
 <p align="center"><img src="icon-192.png" width="110" alt="MUPGLOBAL SARL"></p>
 
-<h1 align="center">MUPGLOBAL PV</h1>
+<h1 align="center">MupPV</h1>
 <p align="center"><b>Application de dimensionnement photovoltaïque – MUPGLOBAL SARL, Lubumbashi (RD Congo)</b><br>
 Android 🤖 et iPhone 📱 · fonctionne sans Internet · mises à jour automatiques</p>
 
@@ -10,7 +10,7 @@ Android 🤖 et iPhone 📱 · fonctionne sans Internet · mises à jour automat
 <a href="https://mupglobalsarl.github.io/pv/video-installation.mp4"><b>🎬 Vidéo d'installation</b></a>
 </p>
 
-<p align="center"><img src="qr-installer.png" width="200" alt="QR code – installer MUPGLOBAL PV"><br>Scannez avec le téléphone</p>
+<p align="center"><img src="qr-installer.png" width="200" alt="QR code – installer MupPV"><br>Scannez avec le téléphone</p>
 
 ---
 
@@ -18,7 +18,7 @@ Android 🤖 et iPhone 📱 · fonctionne sans Internet · mises à jour automat
 
 1. Ouvrez **https://mupglobalsarl.github.io/pv/installer.html** dans **Chrome** (depuis WhatsApp : menu ⋮ → « Ouvrir dans Chrome »).
 2. Touchez **« Installer l'application »** (ou menu ⋮ → « Installer l'application » / « Ajouter à l'écran d'accueil »).
-3. L'icône **MUPGLOBAL PV** apparaît sur l'écran d'accueil : ouvrez-la.
+3. L'icône **MupPV** apparaît sur l'écran d'accueil : ouvrez-la.
 4. Envoyez le **code de l'appareil** à MUPGLOBAL SARL et collez la clé reçue → **Activer**.
 
 > Pas d'icône ? Paramètres → Applications → Chrome → Autorisations → « Raccourcis sur l'écran d'accueil ».
@@ -28,7 +28,7 @@ Android 🤖 et iPhone 📱 · fonctionne sans Internet · mises à jour automat
 1. Ouvrez **https://mupglobalsarl.github.io/pv/installer.html** dans **Safari** (pas dans WhatsApp, pas en navigation privée).
 2. **iOS 26** : touchez **⋯** (à droite de la barre d'adresse) → **Partager ⇧** → **« Sur l'écran d'accueil »** → laissez activé **« Ouvrir en tant qu'app web »** → **Ajouter**.
    **iOS 18 et plus ancien** : touchez **Partager ⇧** → **« Sur l'écran d'accueil »** → **Ajouter**.
-3. **Ouvrez l'icône MUPGLOBAL PV** et demandez la clé **depuis l'icône** (sur iPhone, l'icône a son propre code d'appareil).
+3. **Ouvrez l'icône MupPV** et demandez la clé **depuis l'icône** (sur iPhone, l'icône a son propre code d'appareil).
 
 ## Ce que fait l'application
 
