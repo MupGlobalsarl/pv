@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob:; connect-src 'self' data: blob: https://mupglobalsarl.github.io https://api.open-meteo.com https://power.larc.nasa.gov; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<title>MupPV – La précision solaire, maîtrisée</title>
+<title>MupPV – Dimensionnement solaire</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -493,13 +493,13 @@ th { color: var(--muted); font-weight: 600; font-size: 12px }
 
 <header class="top">
   <div class="wrap">
-    <img alt="Logo MupGlobal SARL" src="img/logo.179a3781.png">
+    <img alt="MupPV" src="img/muppv-emblem.png">
     <div class="who"><div class="co"><span class="pv-name">Mup<b>PV</b>™</span> · MUPGLOBAL SARL</div><div class="pn" id="pn"></div></div>
     <button id="btn-proj" type="button">Projets</button>
   </div>
 </header>
 <div class="strip" aria-live="polite"><div class="wrap" id="strip"></div></div>
-<div class="wrap noprint" id="instbar" hidden style="padding-top:10px"><div style="display:flex;gap:10px;align-items:center;background:#FFF4D6;border:1px solid #F5B301;border-radius:14px;padding:10px 12px;color:#3d2c00"><img alt="" src="icon-192.png" style="width:40px;height:40px;border-radius:10px;flex:none"><div id="insttxt" style="flex:1;font:600 14px/1.25 var(--body)">Installez MupPV : icône sur l'écran d'accueil, fonctionne sans Internet</div><button type="button" class="btn" data-install style="flex:none;padding:10px 14px">Installer</button><button type="button" data-instx aria-label="Fermer" style="flex:none;border:0;background:none;font-size:22px;color:#3d2c00">×</button></div></div>
+<div class="wrap noprint" id="instbar" hidden style="padding-top:10px"><div style="display:flex;gap:10px;align-items:center;background:#FFF4D6;border:1px solid #F5B301;border-radius:14px;padding:10px 12px;color:#3d2c00"><img alt="" src="img/muppv-icon.png" style="width:40px;height:40px;border-radius:10px;flex:none"><div id="insttxt" style="flex:1;font:600 14px/1.25 var(--body)">Installez MupPV : icône sur l'écran d'accueil, fonctionne sans Internet</div><button type="button" class="btn" data-install style="flex:none;padding:10px 14px">Installer</button><button type="button" data-instx aria-label="Fermer" style="flex:none;border:0;background:none;font-size:22px;color:#3d2c00">×</button></div></div>
 <div class="wrap pbar" id="pbar" role="toolbar" aria-label="Gestion des projets">
   <button type="button" class="p1" data-psave><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>Enregistrer ce projet</button>
   <button type="button" class="p2" data-pnew><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M12 11v6M9 14h6"/></svg>Nouveau projet</button>
