@@ -1,5 +1,5 @@
 /* MUPGLOBAL SARL – service worker : application disponible hors connexion, mise à jour automatique quand Internet est disponible */
-const CACHE = "mupglobal-pv-202611190945";
+const CACHE = "mupglobal-pv-202611191015";
 const IMG = "mupglobal-pv-img"; /* photos des produits : cache durable, rempli à la demande puis complété en arrière-plan */
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./installer.html", "./qr-installer.png", "./muppv-logo.webp"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
@@ -21,8 +21,12 @@ self.addEventListener("fetch", (e) => {
     return;
   }
   if (e.request.mode === "navigate") {
-    const key = /installer\.html$/.test(u.pathname) ? "./installer.html" : "./index.html";
-    e.respondWith(fetch(e.request).then((r) => { if (r.ok) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(key, cp)); } return r; }).catch(() => caches.match(key)));
+    /* ouverture rapide : la page enregistrée s'affiche tout de suite si le réseau tarde (plus de 1,2 s) ;
+       la nouvelle version est téléchargée en arrière-plan. « ?u= » (bouton Mettre à jour) force le réseau. */
+    const key = /installer\.html$/.test(u.pathname) ? "./installer.html" : "./index.html", fresh = /[?&]u=\d/.test(u.search);
+    const net = fetch(e.request).then((r) => { if (r.ok) { const cp = r.clone(); return caches.open(CACHE).then((c) => c.put(key, cp)).then(() => r, () => r); } return r; });
+    e.waitUntil(net.then(() => {}, () => {}));
+    e.respondWith(fresh ? net.catch(() => caches.match(key)) : caches.match(key).then((m) => m ? Promise.race([net.then((r) => (r.ok ? r : m), () => m), new Promise((res) => setTimeout(() => res(m), 1200))]) : net));
     return;
   }
   e.respondWith(caches.match(e.request).then((m) => m || fetch(e.request).then((r) => { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, cp)); return r; })));
