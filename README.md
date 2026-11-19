@@ -38,6 +38,6 @@ Marques : Victron, Deye, Sunsynk, Growatt, Felicity, SRNE, Must, Luxpower, Solis
 ## Licence
 
 Application sous licence : **une licence par appareil**. Sans clé, elle s'ouvre en démonstration.
-Licence et assistance : **WhatsApp +243 995 679 353** · dieumercimupole9@gmail.com
+Licence et assistance : **WhatsApp +243 995 679 353** · mupglobalsarl@gmail.com
 
 © MUPGLOBAL SARL – reproduction et revente interdites.
