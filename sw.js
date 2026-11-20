@@ -1,7 +1,7 @@
 /* MUPGLOBAL SARL – service worker : application disponible hors connexion, mise à jour automatique quand Internet est disponible */
 const CACHE = "mupglobal-pv-202611200035";
 const IMG = "mupglobal-pv-img"; /* photos des produits : cache durable, rempli à la demande puis complété en arrière-plan */
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./installer.html", "./qr-installer.png", "./muppv-logo.webp"];
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./installer.html", "./qr-installer.png", "./mupsolar-logo.webp"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("mupglobal-pv-") && k !== CACHE && k !== IMG).map((k) => caches.delete(k)))).then(() => self.clients.claim()).then(() => { imgFill(); })); });
 /* après l'installation : télécharge tranquillement les photos manquantes pour qu'elles soient disponibles hors connexion, et retire les anciennes */
