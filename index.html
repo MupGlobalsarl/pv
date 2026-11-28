@@ -7243,7 +7243,7 @@ Object.assign(PROD_IMGS, { "mu_vpm": "img/mu_vpm.e976b24b.webp", "mu_eco": "img/
 Object.assign(PROD_IMGS, { "mu_lp15": "img/mu_lp15.21a4b56e.webp" });
 Object.assign(PROD_IMGS, { "dy_dl25": "img/dy_dl25.9010b450.webp", "dy_dl5c": "img/dy_dl5c.84878ebb.webp", "dy_dl5cpro": "img/dy_dl5cpro.f70b6574.webp", "dy_pbpro": "img/dy_pbpro.e691a90b.webp", "dy_brick": "img/dy_brick.dcae4044.webp", "dy_dyne": "img/dy_dyne.d816d18f.webp" });
 fabApply();
-Object.assign(PROD_IMGS, { "vt_falcon": "img/vt_falcon.89059ced.webp", "bc_bct48": "img/bc_bct48.28ba9958.webp" });
+Object.assign(PROD_IMGS, { "vt_falcon": "img/vt_falcon.70432132.webp", "bc_bct48": "img/bc_bct48.91496667.webp" });
 PROD_RULES.unshift([/Voltrra FALCON/i, "vt_falcon", 0, "brochure Voltrra"], [/Blue Carbon BCT-V-48-100/i, "bc_bct48", 0, "fiche technique Blue Carbon"]);
 PROD_RULES.unshift([/Dyness DYNE /i, "dy_dyne", 0, "brochure Dyness Afrique"], [/Dyness DL5\.0C Pro/i, "dy_dl5cpro", 0, "brochure Dyness Afrique"], [/Dyness DL5\.0C \(/i, "dy_dl5c", 0, "brochure Dyness Afrique"], [/Dyness PowerBrick SC/i, "dy_brick", 1, "brochure Dyness Afrique"], [/Dyness PowerBrick \(/i, "dy_brick", 0, "brochure Dyness Afrique"], [/Dyness Powerbox Pro/i, "dy_pbpro", 0, "brochure Dyness Afrique"], [/Dyness DL2\.5/i, "dy_dl25", 0, "brochure Dyness Afrique"]);
 PROD_RULES.unshift([/Techfine GA\d+SMH/i, "tf_ga", 0, "brochure Techfine GA Pro"], [/WHC Solar WHC-450M/i, "whc_450", 0, "fiche technique WHC Solar"]);
@@ -8237,6 +8237,12 @@ function dzCut(src) {
                     if (y < h - 1)
                         st.push(i + w);
                 }
+                let gone = 0;
+                for (let i = 3; i < p.length; i += 4)
+                    if (p[i] === 0)
+                        gone++;
+                if (gone > 0.75 * w * h)
+                    return ok(src); // appareil blanc collé au fond blanc : détourage abandonné, photo gardée telle quelle
                 g.putImageData(d, 0, 0);
                 ok(c.toDataURL("image/png"));
             }
