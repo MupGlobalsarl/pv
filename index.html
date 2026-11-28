@@ -3746,6 +3746,24 @@ compute = function (S) {
         } });
     }
 })();
+/* MUPGLOBAL SARL – Voltrra FALCON 8 et FALCON 10 (brochure « Voltrra energy storage product and solution », fiche V1.0 du 30/09/2025)
+   et Blue Carbon BCT-V-48-100 (fiche technique Blue Carbon Technology).
+   FALCON : onduleurs hybrides monophasés, batterie 40–58 V, PV 550 V max, MPPT 100–430 V, 2 MPPT (16 A retenus par MPPT),
+   charge/décharge 160 A (8 kW) et 200 A (10 kW) ; surcharge 130 % pendant 1 s retenue comme pointe (la fiche donne 150 % pendant 100 ms seulement).
+   Les FALCON triphasés (R6KH3-P à R15KH3-P) sont à batterie haute tension (150–550 V) : non retenus.
+   BCT-V-48-100 : 51,2 V 100 Ah, 80 A en continu ; la fiche ne donne ni communication BMS ni nombre maximal en parallèle : 4 retenues par prudence.
+   Prix : indicatifs (USD), modifiables dans Budget. */
+(function () {
+    const V = "Voltrra";
+    [["Voltrra FALCON 8", V, "Mono", 48, 8000, 10400, 12000, 550, 100, 430, 2, 16, 160, 1500],
+        ["Voltrra FALCON 10", V, "Mono", 48, 10000, 13000, 15000, 550, 100, 430, 2, 16, 200, 1800]].forEach((x) => { if (!CAT.hyb.some((y) => y[0] === x[0]))
+        CAT.hyb.push(x); });
+    if (!BRANDS_ALL.includes(V))
+        BRANDS_ALL.push(V);
+    const b = ["Blue Carbon BCT-V-48-100 (51,2 V 100 Ah)", "Lithium LiFePO4", 48, 100, 80, 900, 1, 4, "Blue Carbon"];
+    if (!CAT.bat.some((y) => y[0] === b[0]))
+        CAT.bat.push(b);
+})();
 /* MUPGLOBAL SARL – Dyness (brochure « Solutions de système de stockage d'énergie – Afrique », version 20250826-FR(AF)).
    Onduleurs hybrides basse tension DYNE 3.6/5.0/6.0/8.0L-1P-A : batterie 40–60 V, PV 600 V max, MPPT 90–520 V, 2 MPPT
    (16 A par MPPT ; 8.0L : 32 A + 20 A, 20 A retenus), pointe 2 × la puissance nominale pendant 10 s, 6 en parallèle au maximum.
@@ -7225,6 +7243,8 @@ Object.assign(PROD_IMGS, { "mu_vpm": "img/mu_vpm.e976b24b.webp", "mu_eco": "img/
 Object.assign(PROD_IMGS, { "mu_lp15": "img/mu_lp15.21a4b56e.webp" });
 Object.assign(PROD_IMGS, { "dy_dl25": "img/dy_dl25.9010b450.webp", "dy_dl5c": "img/dy_dl5c.84878ebb.webp", "dy_dl5cpro": "img/dy_dl5cpro.f70b6574.webp", "dy_pbpro": "img/dy_pbpro.e691a90b.webp", "dy_brick": "img/dy_brick.dcae4044.webp", "dy_dyne": "img/dy_dyne.d816d18f.webp" });
 fabApply();
+Object.assign(PROD_IMGS, { "vt_falcon": "img/vt_falcon.89059ced.webp", "bc_bct48": "img/bc_bct48.28ba9958.webp" });
+PROD_RULES.unshift([/Voltrra FALCON/i, "vt_falcon", 0, "brochure Voltrra"], [/Blue Carbon BCT-V-48-100/i, "bc_bct48", 0, "fiche technique Blue Carbon"]);
 PROD_RULES.unshift([/Dyness DYNE /i, "dy_dyne", 0, "brochure Dyness Afrique"], [/Dyness DL5\.0C Pro/i, "dy_dl5cpro", 0, "brochure Dyness Afrique"], [/Dyness DL5\.0C \(/i, "dy_dl5c", 0, "brochure Dyness Afrique"], [/Dyness PowerBrick SC/i, "dy_brick", 1, "brochure Dyness Afrique"], [/Dyness PowerBrick \(/i, "dy_brick", 0, "brochure Dyness Afrique"], [/Dyness Powerbox Pro/i, "dy_pbpro", 0, "brochure Dyness Afrique"], [/Dyness DL2\.5/i, "dy_dl25", 0, "brochure Dyness Afrique"]);
 PROD_RULES.unshift([/Techfine GA\d+SMH/i, "tf_ga", 0, "brochure Techfine GA Pro"], [/WHC Solar WHC-450M/i, "whc_450", 0, "fiche technique WHC Solar"]);
 PROD_RULES.unshift([/Must LP15/i, "mu_lp15", 0, "catalogue Must"], [/Must PV1900-.*EXP/i, "mu_exp2", 0, "catalogue Must"], [/Must .*VPM II/i, "mu_vpm", 0, "catalogue Must"], [/Must .*VHM/i, "mu_vpm", 1, "catalogue Must"], [/Must .*ECO/i, "mu_eco", 0, "catalogue Must"], [/Must .*PRO II/i, "mu_pro2", 0, "catalogue Must"], [/Must PV19-(4024|6048) EXP/i, "mu_exp", 0, "catalogue Must"], [/Must PV19-/i, "mu_exp2", 0, "catalogue Must"], [/Must PV3900/i, "mu_3900", 0, "catalogue Must"], [/Must PH11-\d+ PRO/i, "mu_ph11pro", 0, "catalogue Must"], [/Must PH11-\d+KL1/i, "mu_kl1", 0, "catalogue Must"], [/Must PH11-[\d.]+KL3/i, "mu_kl3", 0, "catalogue Must"], [/Must LP16-48300/i, "mu_lp16v", 0, "catalogue Must"], [/Must LP16/i, "mu_lp16w", 0, "catalogue Must"], [/Must LP18/i, "mu_lp18", 0, "catalogue Must"]);
